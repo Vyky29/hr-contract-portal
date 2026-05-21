@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR Contract Portal | clubSENsational</title>
+  <style>
+    :root {
+      --navy: #0f2744;
+      --navy-light: #1a3a5c;
+      --soft-blue: #4a7c9b;
+      --soft-blue-light: #e8f0f6;
+      --gold: #c9a227;
+      --gold-light: #f5ecd4;
+      --white: #ffffff;
+      --grey-100: #f7f9fb;
+      --grey-200: #e2e8f0;
+      --grey-500: #64748b;
+      --grey-700: #334155;
+      --error: #b91c1c;
+      --success: #166534;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(15, 39, 68, 0.08);
+      --shadow-lg: 0 4px 20px rgba(15, 39, 68, 0.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--grey-700);
+      background: var(--grey-100);
+    }
+    .header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: var(--white);
+      padding: 1.5rem 2rem;
+      border-bottom: 3px solid var(--gold);
+    }
+    .header h1 { margin: 0 0 0.25rem; font-size: 1.75rem; font-weight: 600; }
+    .header p { margin: 0; opacity: 0.9; font-size: 1rem; }
+    .header-brand { font-size: 0.85rem; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+    .alert-locked {
+      background: var(--gold-light);
+      border: 1px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--navy);
+    }
+    .contract-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media (max-width: 900px) { .contract-types { grid-template-columns: 1fr; } }
+    .type-card {
+      background: var(--white);
+      border: 2px solid var(--grey-200);
+      border-radius: var(--radius);
+      padding: 1rem;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .type-card:focus { outline: 2px solid var(--soft-blue); outline-offset: 2px; }
+    .type-card.active { border-color: var(--navy); box-shadow: var(--shadow); }
+    .type-card.disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+    .type-card h3 { margin: 0 0 0.25rem; font-size: 1rem; color: var(--navy); }
+    .type-card .badge { display: inline-block; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; margin-top: 0.5rem; }
+    .badge-active { background: var(--navy); color: var(--white); }
+    .badge-soon { background: var(--grey-200); color: var(--grey-500); }
+    .progress-bar { display: flex; gap: 0.25rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .progress-step {
+      flex: 1;
+      min-width: 100px;
+      text-align: center;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      color: var(--grey-500);
+    }
+    .progress-step.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
+    .progress-step.done { background: var(--soft-blue-light); color: var(--navy); border-color: var(--soft-blue); }
+    .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 1100px) { .main-grid { grid-template-columns: 1fr; } }
+    .panel {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+    }
+    .panel h2 { margin: 0 0 1rem; font-size: 1.15rem; color: var(--navy); border-bottom: 2px solid var(--soft-blue-light); padding-bottom: 0.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: 500; margin-bottom: 0.35rem; color: var(--navy); font-size: 0.9rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--soft-blue);
+      box-shadow: 0 0 0 3px rgba(74, 124, 155, 0.25);
+    }
+    .form-group .error-msg { color: var(--error); font-size: 0.85rem; margin-top: 0.25rem; display: none; }
+    .form-group.invalid input, .form-group.invalid select, .form-group.invalid textarea { border-color: var(--error); }
+    .form-group.invalid .error-msg { display: block; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; }
+    .checkbox-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; cursor: pointer; }
+    .rate-display {
+      background: var(--soft-blue-light);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      border-left: 4px solid var(--gold);
+      font-size: 0.95rem;
+    }
+    .ref-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .ref-badge {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+      background: var(--navy);
+      color: var(--white);
+      border-radius: 4px;
+    }
+    .ref-badge.gold { background: var(--gold); color: var(--navy); }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    button, .btn {
+      padding: 0.65rem 1.25rem;
+      font-size: 1rem;
+      font-family: inherit;
+      border-radius: var(--radius);
+      cursor: pointer;
+      border: none;
+      font-weight: 500;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    button:focus-visible, .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .btn-primary { background: var(--navy); color: var(--white); }
+    .btn-primary:hover:not(:disabled) { background: var(--navy-light); }
+    .btn-secondary { background: var(--white); color: var(--navy); border: 1px solid var(--navy); }
+    .btn-secondary:hover:not(:disabled) { background: var(--soft-blue-light); }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover:not(:disabled) { filter: brightness(1.05); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .preview-doc {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      padding: 2rem;
+      max-height: 70vh;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #1a1a1a;
+      box-shadow: var(--shadow-lg);
+    }
+    .preview-doc h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; color: var(--navy); }
+    .preview-doc .doc-title { text-align: center; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+    .preview-doc .meta { font-size: 0.8rem; color: var(--grey-500); margin-bottom: 1rem; }
+    .signature-pad-wrap { border: 2px solid var(--grey-200); border-radius: var(--radius); background: var(--white); margin: 0.5rem 0; }
+    #signatureCanvas { display: block; width: 100%; height: 150px; cursor: crosshair; touch-action: none; }
+    .warning-box {
+      background: #fef3c7;
+      border: 1px solid #d97706;
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .success-box {
+      background: #dcfce7;
+      border: 1px solid var(--success);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin: 1rem 0;
+      display: none;
+    }
+    .success-box.visible { display: block; }
+    .recent-section { margin-top: 2rem; }
+    .recent-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .recent-table th, .recent-table td { padding: 0.6rem; text-align: left; border-bottom: 1px solid var(--grey-200); }
+    .recent-table th { background: var(--navy); color: var(--white); }
+    .recent-table tr:hover { background: var(--soft-blue-light); }
+    .hr-notes { border-left: 3px solid var(--soft-blue); }
+    #pdfSource { position: absolute; left: -9999px; width: 210mm; padding: 20mm; font-size: 11pt; line-height: 1.5; }
+    .hidden { display: none !important; }
+    #otherLocationWrap { margin-top: 0.5rem; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    #fgPlace fieldset { border: none; padding: 0; margin: 0; }
+    #fgPlace.invalid .error-msg { display: block; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-brand">clubSENsational</div>
+    <h1>HR Contract Portal</h1>
+    <p>Create, review and issue employment contracts securely.</p>
+  </header>
+
+  <div class="container">
+    <div class="alert-locked" role="alert">
+      <strong>Legal wording is locked.</strong> Only authorised fields can be changed. HR notes are internal only and do not appear in the final contract.
+    </div>
+
+    <div class="contract-types" role="group" aria-label="Contract type">
+      <div class="type-card active" id="typeZero" tabindex="0" aria-pressed="true">
+        <h3>Zero Hours Contract</h3>
+        <p style="margin:0;font-size:0.85rem;color:var(--grey-500);">Variable schedule employment</p>
+        <span class="badge badge-active">Active</span>
+      </div>
+      <div class="type-card disabled" aria-disabled="true">
+        <h3>Part Time Contract</h3>
+        <p style="margin:0;font-size:0.85rem;color:var(--grey-500);">Fixed part-time hours</p>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+      <div class="type-card disabled" aria-disabled="true">
+        <h3>Full Time Contract</h3>
+        <p style="margin:0;font-size:0.85rem;color:var(--grey-500);">Full-time employment</p>
+        <span class="badge badge-soon">Coming soon</span>
+      </div>
+    </div>
+
+    <div class="ref-badges">
+      <span class="ref-badge gold" id="badgeVersion">Contract Version: 1.0</span>
+      <span class="ref-badge" id="badgeReference">Contract Reference: â€”</span>
+    </div>
+
+    <nav class="progress-bar" aria-label="Progress">
+      <div class="progress-step active" data-step="1">1. Employee Details</div>
+      <div class="progress-step" data-step="2">2. Contract Setup</div>
+      <div class="progress-step" data-step="3">3. Review Contract</div>
+      <div class="progress-step" data-step="4">4. Employee Signature</div>
+      <div class="progress-step" data-step="5">5. Generate PDF</div>
+    </nav>
+
+    <div class="main-grid">
+      <div class="panel">
+        <form id="contractForm" novalidate>
+          <div class="step-panel active" data-step="1">
+            <h2>Step 1: Employee Details</h2>
+            <div class="form-group" id="fgName">
+              <label for="employeeName">Employee full name <span aria-hidden="true">*</span></label>
+              <input type="text" id="employeeName" name="employeeName" required autocomplete="name">
+              <span class="error-msg">Employee full name is required.</span>
+            </div>
+            <div class="form-group" id="fgAddress">
+              <label for="employeeAddress">Employee address <span aria-hidden="true">*</span></label>
+              <textarea id="employeeAddress" name="employeeAddress" rows="3" required></textarea>
+              <span class="error-msg">Employee address is required.</span>
+            </div>
+            <div class="form-group" id="fgEmail">
+              <label for="employeeEmail">Employee email <span aria-hidden="true">*</span></label>
+              <input type="email" id="employeeEmail" name="employeeEmail" required autocomplete="email">
+              <span class="error-msg">Valid employee email is required.</span>
+            </div>
+          </div>
+
+          <div class="step-panel" data-step="2">
+            <h2>Step 2: Contract Setup</h2>
+            <div class="form-group" id="fgContractDate">
+              <label for="contractDate">Contract date <span aria-hidden="true">*</span></label>
+              <input type="date" id="contractDate" name="contractDate" required>
+              <span class="error-msg">Contract date is required.</span>
+            </div>
+            <div class="form-group" id="fgCommencement">
+              <label for="commencementDate">Commencement date <span aria-hidden="true">*</span></label>
+              <input type="date" id="commencementDate" name="commencementDate" required>
+              <span class="error-msg">Commencement date is required.</span>
+            </div>
+            <div class="form-group" id="fgRole">
+              <label for="role">Role <span aria-hidden="true">*</span></label>
+              <select id="role" name="role" required>
+                <option value="">Select role</option>
+                <option value="Support Worker">Support Worker</option>
+                <option value="Climbing Instructor">Climbing Instructor</option>
+                <option value="Fitness Instructor">Fitness Instructor</option>
+                <option value="Swimming Instructor">Swimming Instructor</option>
+              </select>
+              <span class="error-msg">Role is required.</span>
+            </div>
+            <div class="form-group" id="fgScale">
+              <label for="scale">Scale <span aria-hidden="true">*</span></label>
+              <select id="scale" name="scale" required disabled>
+                <option value="">Select scale</option>
+                <option value="Scale 1">Scale 1</option>
+                <option value="Scale 2">Scale 2</option>
+                <option value="Scale 3">Scale 3</option>
+              </select>
+              <span class="error-msg">Scale is required.</span>
+            </div>
+            <div class="rate-display" id="rateDisplay" aria-live="polite">Select role and scale to view hourly rate.</div>
+            <div class="form-group" id="fgPlace" style="margin-bottom:1rem;">
+              <fieldset>
+                <legend style="font-weight:500;margin-bottom:0.35rem;color:var(--navy);font-size:0.9rem;">Place of work <span aria-hidden="true">*</span></legend>
+                <div class="checkbox-group" id="placeCheckboxes">
+                  <label><input type="checkbox" name="place" value="Acton Centre (W3 6LE)"> Acton Centre (W3 6LE)</label>
+                  <label><input type="checkbox" name="place" value="SwimFarm Centre (W10 6RP)"> SwimFarm Centre (W10 6RP)</label>
+                  <label><input type="checkbox" name="place" value="Westway Sports Centre (W10 6RP)"> Westway Sports Centre (W10 6RP)</label>
+                  <label><input type="checkbox" name="place" value="Northolt Centre (UB5 4AB)"> Northolt Centre (UB5 4AB)</label>
+                  <label><input type="checkbox" name="place" id="placeOther" value="Other"> Other</label>
+                </div>
+                <div id="otherLocationWrap" class="hidden">
+                  <label for="otherLocation" class="sr-only">Other location</label>
+                  <input type="text" id="otherLocation" placeholder="Specify other location">
+                </div>
+                <span class="error-msg" id="placeError">At least one place of work is required.</span>
+              </fieldset>
+            </div>
+            <div class="form-group">
+              <label for="normalHours">Normal hours of work</label>
+              <input type="text" id="normalHours" name="normalHours" value="Variable hours">
+            </div>
+            <div class="form-group" id="fgDirector">
+              <label for="directorName">Director name <span aria-hidden="true">*</span></label>
+              <input type="text" id="directorName" name="directorName" required>
+              <span class="error-msg">Director name is required.</span>
+            </div>
+            <div class="form-group">
+              <label for="directorSignatureName">Director signature name</label>
+              <input type="text" id="directorSignatureName" name="directorSignatureName" placeholder="Typed signature for director">
+            </div>
+            <div class="form-group hr-notes">
+              <label for="hrNotes">Internal HR notes</label>
+              <textarea id="hrNotes" name="hrNotes" rows="3" placeholder="Internal use only  not included in contract"></textarea>
+            </div>
+          </div>
+
+          <div class="step-panel" data-step="3">
+            <h2>Step 3: Review Contract</h2>
+            <p>Review the live preview on the right. Confirm all details are correct before proceeding to signature.</p>
+            <div class="rate-display" id="reviewSummary"></div>
+          </div>
+
+          <div class="step-panel" data-step="4">
+            <h2>Step 4: Employee Signature</h2>
+            <div class="form-group">
+              <label for="typedName">Typed full name confirmation <span aria-hidden="true">*</span></label>
+              <input type="text" id="typedName" placeholder="Type full name as on contract">
+            </div>
+            <div class="form-group">
+              <label>Employee signature <span aria-hidden="true">*</span></label>
+              <div class="signature-pad-wrap">
+                <canvas id="signatureCanvas" width="500" height="150" aria-label="Signature pad"></canvas>
+              </div>
+              <button type="button" class="btn-secondary" id="clearSignature">Clear Signature</button>
+            </div>
+            <div class="form-group">
+              <label>Signature date</label>
+              <input type="text" id="employeeSignatureDate" readonly>
+            </div>
+            <div class="form-group">
+              <label><input type="checkbox" id="acknowledgement" required> I confirm that I have read, understood and agree to the terms of this employment contract. <span aria-hidden="true">*</span></label>
+            </div>
+            <div class="warning-box" id="signatureWarning">
+              The contract cannot be generated until the employee has signed, typed their full name, and acknowledged the terms.
+            </div>
+          </div>
+
+          <div class="step-panel" data-step="5">
+            <h2>Step 5: Generate PDF</h2>
+            <p>Generate the signed employment contract as a PDF document.</p>
+            <div class="warning-box" id="pdfWarning">Complete all required fields and employee acknowledgement before generating the PDF.</div>
+            <button type="button" class="btn-gold" id="generatePdf" disabled>Generate Signed Contract PDF</button>
+            <div class="success-box" id="successBox" role="status">
+              <strong>Contract generated and recorded locally.</strong>
+              <p id="downloadConfirm" style="margin:0.5rem 0 0;"></p>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn-secondary" id="btnPrev" disabled>Previous</button>
+            <button type="button" class="btn-primary" id="btnNext">Next</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Live Contract Preview</h2>
+        <div class="preview-doc" id="livePreview" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <section class="recent-section panel">
+      <h2>Recent Contracts</h2>
+      <table class="recent-table" id="recentTable">
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Employee</th>
+            <th>Role</th>
+            <th>Scale</th>
+            <th>Generated date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="recentBody"></tbody>
+      </table>
+      <p id="noRecent" style="color:var(--grey-500);">No contracts generated yet.</p>
+    </section>
+  </div>
+
+  <div id="pdfSource"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+/* HR Contract Portal - clubSENsational
+ * Future Supabase integration:
+ * - Save signed PDF to employee profile
+ * - Save audit trail
+ * - Save IP address
+ * - Save contract version
+ * - Send email copy to employee
+ * - Send email copy to HR
+ * - Add director stored signature
+ * - Add role based access control
+ */
+(function () {
+  'use strict';
+  const CONTRACT_VERSION = '1.0';
+  const ADMIN_RATE = '13';
+  const GBP = '\u00A3';
+  const EM = '\u2014';
+  const STORAGE_KEY = 'clubSENsational_hr_contracts';
+  const RATE_TABLE = {
+    'Support Worker': { 'Scale 1': 18, 'Scale 2': 20, 'Scale 3': 23 },
+    'Climbing Instructor': { 'Scale 1': 22, 'Scale 2': 24, 'Scale 3': 30 },
+    'Fitness Instructor': { 'Scale 1': 24, 'Scale 2': 28, 'Scale 3': 32 },
+    'Swimming Instructor': { 'Scale 1': 22, 'Scale 2': 24, 'Scale 3': 28 }
+  };
+  const MASTER_TEMPLATE = [
+    'ZERO HOURS EMPLOYMENT CONTRACT', '',
+    'Contract Version: {{CONTRACT_VERSION}}',
+    'Contract Reference: {{CONTRACT_REFERENCE}}',
+    'Generated Date: {{GENERATED_DATE}}', '',
+    'THIS EMPLOYMENT CONTRACT dated {{CONTRACT_DATE}}', '',
+    'BETWEEN:', '',
+    'EMPLOYEE DETAILS:',
+    'Full Name: {{EMPLOYEE_FULL_NAME}}',
+    'Address: {{EMPLOYEE_ADDRESS}}',
+    'Email: {{EMPLOYEE_EMAIL}}', '',
+    'EMPLOYER DETAILS:',
+    'clubSENsational LTD',
+    '56A Valetta Road, W3 7TN, London, United Kingdom',
+    'Registered Company No. 13755417', '',
+    'BACKGROUND:',
+    'The Employer is of the opinion that the Employee has the necessary qualifications, experience and abilities to assist and benefit the Employer in its business.',
+    'The Employer desires to employ the Employee and the Employee has agreed to accept and enter such employment upon the terms and conditions set out in this Agreement.',
+    'IN CONSIDERATION OF the matters described above and of the mutual benefits and obligations set forth in this Agreement, the parties agree as follows:', '',
+    'PARTICULARS OF EMPLOYMENT',
+    "As required by section 1 of the Employment Rights Act 1996, the particulars of the Employee's employment are detailed within this agreement.", '',
+    'COMMENCEMENT DATE AND TERM',
+    'The Employee will commence employment with the Employer on {{COMMENCEMENT_DATE}}.',
+    "The Employee's schedule of employment will be as follows:", '',
+    '{{CONTRACT_TYPE}}', '',
+    'JOB TITLE AND DESCRIPTION',
+    'The initial job title of the Employee will be:', '',
+    '{{JOB_TITLE}}',
+    'The Employee agrees to be employed on the terms and conditions set out in this Agreement.',
+    'The Employee agrees to be subject to the general supervision of and act pursuant to the orders, advice and direction of the Employer.',
+    'The Employee will perform any and all duties as requested by the Employer that are reasonable and customarily performed by a person holding a similar position in the industry or business of the Employer.',
+    "The Employee's job title or duties may be changed by agreement and with the approval of both the Employee and the Employer or after a notice period required under law.",
+    "The Employee agrees to abide by the Employer's rules, regulations, policies and practices, including those concerning work schedules, annual leave and sick leave, as they may from time to time be adopted or modified.",
+    "The Employee agrees to follow the Employer's Equipment and Uniform Policy and is responsible for the proper use, maintenance and care of any equipment, tools, uniforms and materials provided by the Employer for work purposes.",
+    'The Employee warrants that they are legally allowed to work in England.', '',
+    'EMPLOYEE REMUNERATION',
+    'Remuneration paid to the Employee for the services rendered by the Employee under this Agreement will consist of:', '',
+    GBP + '{{DELIVERY_RATE}}/h Delivery Service ({{ROLE_SCALE}} ' + EM + ' {{JOB_TITLE}})', '',
+    GBP + '{{ADMIN_RATE}}/h (Reviewed annually in line with Minimum Wage) ' + EM + ' Administrative Tasks, Inductions and Training.',
+    "If the Employer cancels a scheduled shift with at least 24 hours' notice, the Employee shall not be entitled to remuneration for that shift.",
+    'If the cancellation occurs less than 24 hours before the scheduled start time, the Employee shall be entitled to full remuneration for the shift as originally scheduled.',
+    'This remuneration will be payable once per month while this Agreement is in force.',
+    "The Employer is entitled to deduct from the Employee's remuneration, or from any other remuneration in whatever form, any applicable deductions and remittances as required by law.",
+    "The Employer will reimburse the Employee for all reasonable expenses, in accordance with the Employer's lawful policies as in effect from time to time.", '',
+    'PENSION',
+    'When required, the Employer will comply with its responsibility to operate a qualifying contributory pension scheme into which the Employee will be auto enrolled, subject to the conditions of the scheme.', '',
+    'PLACE OF WORK',
+    "The Employee's place of work will be:", '',
+    '{{PLACE_OF_WORK}}', '',
+    'TIME OF WORK',
+    "The Employee's normal hours of work, including breaks, are as follows:", '',
+    '{{NORMAL_HOURS_OF_WORK}}',
+    "However, the Employee will, on receiving reasonable notice from the Employer, work additional hours and/or hours outside of the Employee's normal hours of work as deemed necessary by the Employer to meet business needs, as permitted by law.", '',
+    'SICKNESS AND DISABILITY',
+    'If the Employee is unable to perform their duties as a result of illness or injury, the Employee will inform the Company Director by email no later than the night before, or not later than 7:00 am on the day of the absence.',
+    'If the Employee satisfies the qualifying conditions laid down by law, they will be entitled to receive statutory sick pay for any period of sickness or injury during agreed hours, but will not receive any other payments from the business during that time.', '',
+    'HOLIDAY ENTITLEMENT',
+    "The Employee's holiday entitlement will depend on the number of hours actually worked and will be pro rated based on a full time entitlement of 28 days' holiday during each full holiday year, including the usual eight public holidays in England and Wales.",
+    "The Business' holiday year runs between 1 January and 31 December.", '',
+    'DISCIPLINARY PROCEDURE',
+    "The Employer's disciplinary procedure, as amended from time to time, applies to the Employee.",
+    'The disciplinary procedure is set out in the Employee Manual and will be provided to the Employee or made available on request.', '',
+    'GRIEVANCE PROCEDURE',
+    "The Employer's grievance procedure, as amended from time to time, applies to the Employee.",
+    'The grievance procedure is set out in the Employee Manual and will be provided to the Employee or made available on request.', '',
+    'CONFIDENTIAL INFORMATION',
+    'The Employee acknowledges that, during employment, they may access confidential information belonging to the Employer.',
+    'The Employee agrees to keep all confidential information strictly confidential and not to disclose, use or share such information except as required for the proper performance of their duties or as authorised by the Employer.',
+    'This obligation will continue after the end of employment.', '',
+    'OWNERSHIP OF CONFIDENTIAL INFORMATION',
+    'All confidential information, documents, materials, systems, resources and work related information remain the property of the Employer.', '',
+    'RETURN OF CONFIDENTIAL INFORMATION',
+    'Upon request, or upon termination of employment, the Employee must return all confidential information, documents, equipment, materials and records belonging to the Employer.', '',
+    'CONTRACT BINDING AUTHORITY',
+    'The Employee does not have authority to enter into contracts or commitments on behalf of the Employer without prior written consent.', '',
+    'TERMINATION OF EMPLOYMENT',
+    "Where there is just cause for termination, the Employer may terminate the Employee's employment with two weeks' notice, as permitted by law.",
+    'If the Employee wishes to terminate their employment, they must provide two weeks\' notice.',
+    'Upon termination, the Employer will pay any outstanding remuneration and accrued holiday entitlement calculated up to the termination date.', '',
+    'GOVERNING LAW',
+    'This Agreement will be construed in accordance with and governed by the laws of England.', '',
+    'GENERAL PROVISIONS',
+    'This Agreement constitutes the entire agreement between the parties.',
+    'Any amendment or modification to this Agreement will only be binding if evidenced in writing and signed by both parties or their authorised representatives.',
+    'This Agreement supersedes any previous employment agreement between the Employer and the Employee.', '',
+    'SIGNATURES',
+    'By signing below, the Employee confirms that they have read, understood and agreed to the terms of this Employment Contract.', '',
+    'EMPLOYEE SIGNATURE',
+    'Name: {{EMPLOYEE_FULL_NAME}}',
+    'Date: {{EMPLOYEE_SIGNATURE_DATE}}',
+    'Signature: {{EMPLOYEE_SIGNATURE}}', '',
+    'DIRECTOR SIGNATURE',
+    'Name: {{DIRECTOR_NAME}}',
+    'Date: {{DIRECTOR_SIGNATURE_DATE}}',
+    'Signature: {{DIRECTOR_SIGNATURE}}', '',
+    'ACKNOWLEDGEMENT',
+    'I confirm that I have read, understood and agree to the terms of this employment contract.',
+    'Employee confirmation: {{EMPLOYEE_ACKNOWLEDGEMENT}}',
+    'Timestamp: {{SIGNED_TIMESTAMP}}'
+  ].join('\n');
+
+  let currentStep = 1, contractReference = '', signatureDataUrl = '';
+  let canvas, ctx, drawing = false;
+  const $ = (id) => document.getElementById(id);
+
+  function formatUKDate(d) {
+    if (!d) return EM;
+    return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  function formatDateTime() {
+    return new Date().toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+  function generateReference() {
+    const name = ($('employeeName').value || 'EMP').replace(/\s+/g, '').slice(0, 4).toUpperCase();
+    return 'CS-ZH-' + name + '-' + Date.now().toString(36).toUpperCase();
+  }
+  function getDeliveryRate() {
+    const role = $('role').value, scale = $('scale').value;
+    return (role && scale && RATE_TABLE[role]) ? RATE_TABLE[role][scale] : null;
+  }
+  function getPlaces() {
+    const places = [];
+    document.querySelectorAll('#placeCheckboxes input:checked').forEach((cb) => {
+      if (cb.value === 'Other') {
+        const o = $('otherLocation').value.trim();
+        if (o) places.push(o);
+      } else places.push(cb.value);
+    });
+    return places;
+  }
+  function getFormData() {
+    const rate = getDeliveryRate(), places = getPlaces();
+    const directorSig = $('directorSignatureName').value.trim() || $('directorName').value.trim();
+    const typed = $('typedName').value.trim(), ack = $('acknowledgement').checked;
+    const now = formatDateTime(), today = new Date().toISOString().slice(0, 10);
+    return {
+      CONTRACT_VERSION, CONTRACT_REFERENCE: contractReference || generateReference(),
+      GENERATED_DATE: formatDateTime(),
+      CONTRACT_DATE: formatUKDate($('contractDate').value),
+      EMPLOYEE_FULL_NAME: $('employeeName').value.trim(),
+      EMPLOYEE_ADDRESS: $('employeeAddress').value.trim(),
+      EMPLOYEE_EMAIL: $('employeeEmail').value.trim(),
+      COMMENCEMENT_DATE: formatUKDate($('commencementDate').value),
+      CONTRACT_TYPE: 'Zero Hours Contract ' + EM + ' hours worked will vary according to business requirements and mutual agreement.',
+      JOB_TITLE: $('role').value, ROLE_SCALE: $('scale').value,
+      DELIVERY_RATE: rate != null ? String(rate) : EM, ADMIN_RATE,
+      PLACE_OF_WORK: places.length ? places.map((p, i) => (i + 1) + '. ' + p).join('\n') : EM,
+      NORMAL_HOURS_OF_WORK: $('normalHours').value.trim() || 'Variable hours',
+      DIRECTOR_NAME: $('directorName').value.trim(),
+      EMPLOYEE_SIGNATURE_DATE: $('employeeSignatureDate').value || formatUKDate(today),
+      EMPLOYEE_SIGNATURE: signatureDataUrl ? '[Signed electronically]' : (typed || EM),
+      DIRECTOR_SIGNATURE_DATE: formatUKDate(today),
+      DIRECTOR_SIGNATURE: directorSig || EM,
+      EMPLOYEE_ACKNOWLEDGEMENT: ack ? 'Confirmed' : 'Pending',
+      SIGNED_TIMESTAMP: ack && signatureDataUrl ? now : EM
+    };
+  }
+  function fillTemplate(data) {
+    let text = MASTER_TEMPLATE;
+    Object.keys(data).forEach((k) => { text = text.split('{{' + k + '}}').join(data[k]); });
+    return text;
+  }
+  function updatePreview() {
+    if (!contractReference) contractReference = generateReference();
+    $('badgeReference').textContent = 'Contract Reference: ' + contractReference;
+    $('badgeVersion').textContent = 'Contract Version: ' + CONTRACT_VERSION;
+    const data = getFormData();
+    data.CONTRACT_REFERENCE = contractReference;
+    const text = fillTemplate(data);
+    $('livePreview').innerHTML = text.split('\n\n').map((block) => {
+      if (block.startsWith('ZERO HOURS')) return '<div class="doc-title">' + block + '</div>';
+      if (block.indexOf('Contract Version:') >= 0) return '<div class="meta">' + block.replace(/\n/g, '<br>') + '</div>';
+      const lines = block.split('\n'), title = lines[0], rest = lines.slice(1).join('<br>');
+      return lines.length === 1 ? '<p>' + block + '</p>' : '<h3>' + title + '</h3><p>' + rest + '</p>';
+    }).join('');
+    const rate = getDeliveryRate();
+    if (rate != null) {
+      const msg = 'Delivery rate: ' + GBP + rate + '/h (' + $('scale').value + ' ' + EM + ' ' + $('role').value + '). Administrative tasks: ' + GBP + ADMIN_RATE + '/h (Reviewed annually in line with Minimum Wage).';
+      $('rateDisplay').textContent = msg;
+      $('reviewSummary').textContent = msg;
+    }
+    updatePdfButton();
+  }
+  function validateStep(step) {
+    let valid = true;
+    const show = (id, ok) => { const el = $(id); if (el) el.classList.toggle('invalid', !ok); if (!ok) valid = false; };
+    if (step === 1) {
+      show('fgName', $('employeeName').value.trim().length > 0);
+      show('fgAddress', $('employeeAddress').value.trim().length > 0);
+      const email = $('employeeEmail').value.trim();
+      show('fgEmail', email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+    }
+    if (step === 2) {
+      show('fgContractDate', !!$('contractDate').value);
+      show('fgCommencement', !!$('commencementDate').value);
+      show('fgRole', !!$('role').value);
+      show('fgScale', !!$('scale').value);
+      const places = getPlaces();
+      $('fgPlace').classList.toggle('invalid', places.length === 0);
+      if (!places.length) valid = false;
+      show('fgDirector', $('directorName').value.trim().length > 0);
+    }
+    return valid;
+  }
+  function validateAllRequired() { for (let s = 1; s <= 2; s++) if (!validateStep(s)) return false; return true; }
+  function canGeneratePdf() {
+    if (!validateAllRequired()) return false;
+    const typed = $('typedName').value.trim(), name = $('employeeName').value.trim();
+    if (!typed || typed.toLowerCase() !== name.toLowerCase()) return false;
+    if (!signatureDataUrl || !$('acknowledgement').checked) return false;
+    return true;
+  }
+  function updatePdfButton() {
+    const ok = canGeneratePdf();
+    $('generatePdf').disabled = !ok;
+    $('pdfWarning').style.display = ok ? 'none' : 'block';
+  }
+  function setStep(step) {
+    currentStep = step;
+    document.querySelectorAll('.step-panel').forEach((p) => p.classList.toggle('active', parseInt(p.dataset.step, 10) === step));
+    document.querySelectorAll('.progress-step').forEach((p) => {
+      const n = parseInt(p.dataset.step, 10);
+      p.classList.remove('active', 'done');
+      if (n === step) p.classList.add('active'); else if (n < step) p.classList.add('done');
+    });
+    $('btnPrev').disabled = step === 1;
+    $('btnNext').textContent = step === 5 ? 'Finish' : 'Next';
+    if (step === 4) $('employeeSignatureDate').value = formatUKDate(new Date().toISOString().slice(0, 10));
+    updatePdfButton();
+  }
+  function initCanvas() {
+    canvas = $('signatureCanvas');
+    ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = 150 * dpr;
+    ctx.scale(dpr, dpr);
+    canvas.style.height = '150px';
+    ctx.strokeStyle = '#0f2744';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    const pos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+      return { x, y };
+    };
+    const start = (e) => { e.preventDefault(); drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    const move = (e) => { if (!drawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+    const end = () => { if (!drawing) return; drawing = false; signatureDataUrl = canvas.toDataURL('image/png'); updatePreview(); updatePdfButton(); };
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('mouseleave', end);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    canvas.addEventListener('touchend', end);
+  }
+  function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); signatureDataUrl = ''; updatePreview(); updatePdfButton(); }
+  function saveToLocalStorage(meta) {
+    const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    list.unshift(meta);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
+    renderRecent();
+  }
+  function renderRecent() {
+    const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const tbody = $('recentBody'), noRecent = $('noRecent');
+    tbody.innerHTML = '';
+    if (!list.length) { noRecent.style.display = 'block'; return; }
+    noRecent.style.display = 'none';
+    list.forEach((row) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + row.contractReference + '</td><td>' + row.employeeName + '</td><td>' + row.role + '</td><td>' + row.scale + '</td><td>' + row.generatedTimestamp + '</td><td>' + row.signedStatus + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+  function buildPdfHtml(data) {
+    let text = fillTemplate(data);
+    const sigImg = signatureDataUrl
+      ? '<img src="' + signatureDataUrl + '" alt="Employee signature" style="max-width:220px;height:70px;display:block;margin-top:6px;">'
+      : '';
+    text = text.replace('Signature: [Signed electronically]', 'Signature:\n' + (signatureDataUrl ? '[See image below]' : ''));
+    const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const paras = text.split('\n\n').map((b) => {
+      const html = esc(b);
+      if (b.indexOf('EMPLOYEE SIGNATURE') >= 0 && sigImg) {
+        return '<p style="margin:0 0 10px;white-space:pre-wrap;font-size:10pt;line-height:1.45;">' + html + '</p>' + sigImg;
+      }
+      return '<p style="margin:0 0 10px;white-space:pre-wrap;font-size:10pt;line-height:1.45;">' + html + '</p>';
+    }).join('');
+    return '<div style="font-family:Georgia,serif;color:#111;padding:16px;max-width:700px;">' +
+      '<h1 style="text-align:center;font-size:13pt;margin:0 0 14px;">ZERO HOURS EMPLOYMENT CONTRACT</h1>' + paras + '</div>';
+  }
+  function pdfFilename() {
+    const name = $('employeeName').value.trim().replace(/\s+/g, '_');
+    const role = $('role').value.replace(/\s+/g, '_');
+    const scale = $('scale').value.replace(/\s+/g, '_');
+    const date = $('contractDate').value || new Date().toISOString().slice(0, 10);
+    return 'ClubSENsational_Employment_Contract_' + name + '_' + role + '_' + scale + '_' + date + '.pdf';
+  }
+  async function generatePdf() {
+    if (!canGeneratePdf()) return;
+    const data = getFormData();
+    data.CONTRACT_REFERENCE = contractReference;
+    data.EMPLOYEE_SIGNATURE = '[Signed electronically]';
+    data.EMPLOYEE_ACKNOWLEDGEMENT = 'Confirmed';
+    data.SIGNED_TIMESTAMP = formatDateTime();
+    const pdfEl = $('pdfSource');
+    pdfEl.innerHTML = buildPdfHtml(data);
+    pdfEl.classList.remove('hidden');
+    pdfEl.style.cssText = 'position:fixed;left:0;top:0;width:210mm;z-index:9999;background:#fff;';
+    try {
+      await html2pdf().set({ margin: 12, filename: pdfFilename(), image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(pdfEl).save();
+      saveToLocalStorage({ contractReference, employeeName: data.EMPLOYEE_FULL_NAME, employeeEmail: data.EMPLOYEE_EMAIL, role: data.JOB_TITLE, scale: data.ROLE_SCALE, deliveryRate: data.DELIVERY_RATE, contractType: 'Zero Hours', contractDate: $('contractDate').value, commencementDate: $('commencementDate').value, generatedTimestamp: data.SIGNED_TIMESTAMP, signedStatus: 'Signed' });
+      $('successBox').classList.add('visible');
+      $('downloadConfirm').textContent = 'Downloaded: ' + pdfFilename();
+    } catch (err) { alert('PDF generation failed. Please try again.'); console.error(err); }
+    pdfEl.classList.add('hidden');
+    pdfEl.style.cssText = '';
+  }
+  function bindEvents() {
+    $('role').addEventListener('change', () => { $('scale').disabled = !$('role').value; $('scale').value = ''; updatePreview(); });
+    $('scale').addEventListener('change', updatePreview);
+    ['employeeName', 'employeeAddress', 'employeeEmail', 'contractDate', 'commencementDate', 'directorName', 'directorSignatureName', 'normalHours', 'typedName'].forEach((id) => {
+      $(id).addEventListener('input', () => { if (id === 'employeeName') contractReference = ''; updatePreview(); });
+    });
+    document.querySelectorAll('#placeCheckboxes input').forEach((cb) => {
+      cb.addEventListener('change', () => { $('otherLocationWrap').classList.toggle('hidden', !$('placeOther').checked); updatePreview(); });
+    });
+    $('otherLocation').addEventListener('input', updatePreview);
+    $('acknowledgement').addEventListener('change', updatePdfButton);
+    $('typedName').addEventListener('input', updatePdfButton);
+    $('clearSignature').addEventListener('click', clearSignature);
+    $('btnNext').addEventListener('click', () => { if (currentStep < 5) { if (currentStep <= 2 && !validateStep(currentStep)) return; setStep(currentStep + 1); } });
+    $('btnPrev').addEventListener('click', () => { if (currentStep > 1) setStep(currentStep - 1); });
+    $('generatePdf').addEventListener('click', generatePdf);
+  }
+  function init() {
+    contractReference = generateReference();
+    $('employeeSignatureDate').value = formatUKDate(new Date().toISOString().slice(0, 10));
+    initCanvas();
+    bindEvents();
+    updatePreview();
+    renderRecent();
+    setStep(1);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+  </script>
+</body>
+</html>
