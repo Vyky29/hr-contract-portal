@@ -33,14 +33,32 @@
       background: var(--grey-100);
     }
     .header {
+      background: var(--white);
+      color: var(--navy);
+      border-bottom: 4px solid var(--gold);
+      box-shadow: var(--shadow);
+    }
+    .header-logo-band {
+      background: var(--white);
+      padding: 1.25rem 2rem 0.75rem;
+      text-align: center;
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .header-logo {
+      max-width: 280px;
+      width: min(280px, 85vw);
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .header-content {
       background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
       color: var(--white);
-      padding: 1.5rem 2rem;
-      border-bottom: 3px solid var(--gold);
+      padding: 1.1rem 2rem 1.35rem;
+      text-align: center;
     }
-    .header h1 { margin: 0 0 0.25rem; font-size: 1.75rem; font-weight: 600; }
-    .header p { margin: 0; opacity: 0.9; font-size: 1rem; }
-    .header-brand { font-size: 0.85rem; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .header-content h1 { margin: 0 0 0.25rem; font-size: 1.5rem; font-weight: 600; }
+    .header-content p { margin: 0; opacity: 0.92; font-size: 0.95rem; }
     .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
     .alert-locked {
       background: var(--gold-light);
@@ -217,32 +235,26 @@
     }
     .contract-document { font-family: Georgia, 'Times New Roman', serif; }
     .contract-letterhead {
-      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-light) 100%);
-      padding: 1.25rem 1.5rem 1rem;
+      background: var(--white);
+      padding: 1.5rem 1.75rem 1rem;
       text-align: center;
-      border-bottom: 4px solid var(--gold);
+      border-bottom: 3px solid var(--gold);
     }
     .contract-logo {
-      max-width: 220px;
+      max-width: 260px;
       width: 100%;
       height: auto;
       display: block;
-      margin: 0 auto 0.5rem;
+      margin: 0 auto;
     }
-    .letterhead-company {
-      color: var(--white);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      margin-top: 0.35rem;
-    }
-    .letterhead-tagline {
-      color: var(--gold);
+    .letterhead-legal {
+      margin-top: 0.65rem;
       font-family: 'Segoe UI', system-ui, sans-serif;
       font-size: 0.72rem;
-      letter-spacing: 0.06em;
-      margin-top: 0.15rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--navy);
     }
     .contract-body { padding: 1.5rem 1.75rem 1rem; }
     .contract-doc-title {
@@ -350,9 +362,13 @@
 </head>
 <body>
   <header class="header">
-    <img src="assets/clubsensational-logo.png" alt="clubSENsational" class="header-logo" width="200" height="auto" style="max-width:200px;margin-bottom:0.75rem;display:block;">
-    <h1>HR Contract Portal</h1>
-    <p>Create, review and issue employment contracts securely.</p>
+    <div class="header-logo-band">
+      <img src="assets/clubsensational-logo.png" alt="clubSENsational" class="header-logo" width="280" height="auto">
+    </div>
+    <div class="header-content">
+      <h1>HR Contract Portal</h1>
+      <p>Create, review and issue employment contracts securely.</p>
+    </div>
   </header>
 
   <div class="container">
@@ -816,8 +832,7 @@
       '<div class="contract-document">' +
       '<header class="contract-letterhead">' +
       '<img src="' + logoSrc + '" alt="clubSENsational" class="contract-logo"' + (imgStyle ? ' style="' + imgStyle + '"' : '') + '>' +
-      '<div class="letterhead-company">clubSENsational LTD</div>' +
-      '<div class="letterhead-tagline">Autism Consultancy Services</div>' +
+      '<div class="letterhead-legal">clubSENsational LTD</div>' +
       '</header>' +
       '<div class="contract-body">' +
       '<h1 class="contract-doc-title">Zero Hours Employment Contract</h1>' +
@@ -1008,10 +1023,9 @@
   function buildPdfHtml(data) {
     const pdfStyles = '<style>' +
       '.contract-document{font-family:Georgia,serif;color:#111;}' +
-      '.contract-letterhead{background:#0f2744;padding:16px 20px 12px;text-align:center;border-bottom:3px solid #c9a227;}' +
-      '.contract-logo{max-width:180px;height:auto;display:block;margin:0 auto 6px;}' +
-      '.letterhead-company{color:#fff;font-family:Arial,sans-serif;font-size:9pt;font-weight:600;}' +
-      '.letterhead-tagline{color:#c9a227;font-family:Arial,sans-serif;font-size:8pt;margin-top:2px;}' +
+      '.contract-letterhead{background:#fff;padding:18px 22px 12px;text-align:center;border-bottom:3px solid #c9a227;}' +
+      '.contract-logo{max-width:220px;height:auto;display:block;margin:0 auto;}' +
+      '.letterhead-legal{margin-top:8px;font-family:Arial,sans-serif;font-size:8pt;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:#0f2744;}' +
       '.contract-body{padding:18px 22px;}' +
       '.contract-doc-title{text-align:center;font-size:12pt;font-weight:700;color:#0f2744;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid #c9a227;}' +
       '.contract-opening{text-align:center;font-weight:600;color:#0f2744;margin:0 0 14px;font-size:10pt;}' +
