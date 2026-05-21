@@ -70,8 +70,7 @@
       font-size: 0.9rem;
       color: var(--navy);
     }
-    .contract-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-    @media (max-width: 900px) { .contract-types { grid-template-columns: 1fr; } }
+    .contract-types { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
     .type-card {
       background: var(--white);
       border: 2px solid var(--grey-200);
@@ -101,8 +100,7 @@
     }
     .progress-step.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
     .progress-step.done { background: var(--soft-blue-light); color: var(--navy); border-color: var(--soft-blue); }
-    .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
-    @media (max-width: 1100px) { .main-grid { grid-template-columns: 1fr; } }
+    .main-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; align-items: start; }
     .panel {
       background: var(--white);
       border-radius: var(--radius);
@@ -143,9 +141,6 @@
       grid-template-columns: 1fr;
       gap: 0.5rem;
       margin-top: 0.25rem;
-    }
-    @media (min-width: 520px) {
-      .checkbox-group { grid-template-columns: 1fr 1fr; }
     }
     .checkbox-group .place-option {
       display: flex;
@@ -399,6 +394,116 @@
     #fgDirectorSignature.invalid .error-msg { display: block; }
     #directorSigError { display: none; }
     #fgDirectorSignature.invalid #directorSigError { display: block; }
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: var(--radius);
+      border: 1px solid var(--grey-200);
+    }
+    .table-scroll .recent-table { margin: 0; min-width: 560px; }
+    .preview-panel { min-width: 0; }
+
+    /* Tablet: 640px+ */
+    @media (min-width: 640px) {
+      .container { padding: 1.5rem 1.75rem 2.5rem; }
+      .contract-types { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+      .checkbox-group { grid-template-columns: 1fr 1fr; }
+      .progress-bar { flex-wrap: wrap; }
+      .progress-step { flex: 1 1 calc(33.333% - 0.25rem); min-width: 120px; }
+      .panel { padding: 1.35rem 1.5rem; }
+      .preview-doc { max-height: 65vh; }
+    }
+
+    /* Tablet landscape / small desktop: 768px+ */
+    @media (min-width: 768px) {
+      .header-logo { width: 260px; max-width: 260px; }
+      .progress-step { flex: 1 1 auto; min-width: 100px; font-size: 0.78rem; }
+      .contract-body { padding: 1.35rem 1.5rem 1rem; }
+      .contract-letterhead { padding: 1.25rem 1.5rem 0.85rem; }
+    }
+
+    /* Desktop: 1024px+ ù form + preview side by side */
+    @media (min-width: 1024px) {
+      .container { padding: 1.75rem 2rem 3rem; }
+      .main-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 1.75rem;
+      }
+      .preview-doc { max-height: calc(100vh - 220px); min-height: 480px; }
+      .progress-step { font-size: 0.8rem; }
+    }
+
+    /* Large desktop: 1280px+ */
+    @media (min-width: 1280px) {
+      .header-logo { width: 280px; max-width: 280px; }
+      .main-grid { gap: 2rem; }
+      .panel { padding: 1.5rem; }
+    }
+
+    /* Mobile: up to 639px */
+    @media (max-width: 639px) {
+      body { font-size: 15px; }
+      .header-logo-band { padding: 1rem 1rem 0.65rem; }
+      .header-logo {
+        width: auto;
+        max-width: min(240px, 88vw);
+        height: auto;
+      }
+      .header-content { padding: 1rem 1.25rem 1.15rem; }
+      .header-content h1 { font-size: 1.25rem; }
+      .header-content p { font-size: 0.88rem; }
+      .container { padding: 1rem 1rem 2rem; }
+      .alert-locked { font-size: 0.85rem; padding: 0.65rem 0.85rem; }
+      .ref-badges { flex-direction: column; }
+      .ref-badge { width: 100%; text-align: center; }
+      .progress-bar {
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .progress-step {
+        flex: none;
+        width: 100%;
+        min-width: 0;
+        text-align: left;
+        padding: 0.6rem 0.85rem;
+        font-size: 0.82rem;
+      }
+      .panel { padding: 1.1rem 1rem; }
+      .panel h2 { font-size: 1.05rem; }
+      .form-group input, .form-group select, .form-group textarea {
+        font-size: 16px;
+        padding: 0.7rem 0.75rem;
+      }
+      .checkbox-group { grid-template-columns: 1fr; }
+      .btn-row { flex-direction: column; }
+      .btn-row button { width: 100%; min-height: 44px; }
+      #generatePdf { width: 100%; min-height: 48px; }
+      .preview-doc {
+        max-height: 55vh;
+        font-size: 0.8rem;
+      }
+      .contract-body { padding: 1rem 1rem 0.85rem; }
+      .contract-letterhead { padding: 1rem 1rem 0.75rem; }
+      .contract-logo {
+        width: auto;
+        max-width: min(220px, 85vw);
+      }
+      .contract-doc-title { font-size: 0.92rem; }
+      .signature-pad-wrap canvas { height: 130px; }
+      .rate-display { font-size: 0.88rem; }
+      .recent-section.panel { padding: 1rem; overflow: hidden; }
+    }
+
+    /* Narrow mobile */
+    @media (max-width: 380px) {
+      .header-content h1 { font-size: 1.1rem; }
+      .type-card h3 { font-size: 0.92rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -437,7 +542,7 @@
 
     <div class="ref-badges">
       <span class="ref-badge gold" id="badgeVersion">Contract Version: 1.0</span>
-      <span class="ref-badge" id="badgeReference">Contract Reference: ù</span>
+      <span class="ref-badge" id="badgeReference">Contract Reference: ‚Äî</span>
     </div>
 
     <nav class="progress-bar" aria-label="Progress">
@@ -603,7 +708,7 @@
         </form>
       </div>
 
-      <div class="panel">
+      <div class="panel preview-panel">
         <h2>Live Contract Preview</h2>
         <div class="preview-doc" id="livePreview" aria-live="polite"></div>
       </div>
@@ -611,19 +716,21 @@
 
     <section class="recent-section panel">
       <h2>Recent Contracts</h2>
-      <table class="recent-table" id="recentTable">
-        <thead>
-          <tr>
-            <th>Reference</th>
-            <th>Employee</th>
-            <th>Role</th>
-            <th>Scale</th>
-            <th>Generated date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="recentBody"></tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="recent-table" id="recentTable">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Employee</th>
+              <th>Role</th>
+              <th>Scale</th>
+              <th>Generated date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="recentBody"></tbody>
+        </table>
+      </div>
       <p id="noRecent" style="color:var(--grey-500);">No contracts generated yet.</p>
     </section>
   </div>
@@ -1075,7 +1182,6 @@
     targetCanvas.addEventListener('touchstart', start, { passive: false });
     targetCanvas.addEventListener('touchmove', move, { passive: false });
     targetCanvas.addEventListener('touchend', end);
-    window.addEventListener('resize', resize);
     return { context, resize, clear: () => { resize(); } };
   }
   function initCanvas() {
@@ -1197,6 +1303,20 @@
     $('btnNext').addEventListener('click', () => { if (currentStep < 5) { if (currentStep <= 2 && !validateStep(currentStep)) return; setStep(currentStep + 1); } });
     $('btnPrev').addEventListener('click', () => { if (currentStep > 1) setStep(currentStep - 1); });
     $('generatePdf').addEventListener('click', generatePdf);
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (employeePadReady) employeePadApi.resize();
+        if (directorPadReady) directorPadApi.resize();
+      }, 150);
+    });
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        if (employeePadReady) employeePadApi.resize();
+        if (directorPadReady) directorPadApi.resize();
+      }, 300);
+    });
   }
   function init() {
     contractReference = generateReference();
