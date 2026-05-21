@@ -4,7 +4,8 @@ Standalone internal portal for HR to create, review, sign and generate **Zero Ho
 
 ## Live
 
-Deployed on Vercel (see deployment URL in project settings).
+- **Production:** https://hr-contract-portal.vercel.app
+- **GitHub:** https://github.com/Vyky29/hr-contract-portal
 
 ## Local preview
 
