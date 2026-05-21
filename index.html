@@ -343,6 +343,9 @@
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
     #fgPlace fieldset { border: none; padding: 0; margin: 0; }
     #fgPlace.invalid .error-msg { display: block; }
+    #fgDirectorSignature.invalid .error-msg { display: block; }
+    #directorSigError { display: none; }
+    #fgDirectorSignature.invalid #directorSigError { display: block; }
   </style>
 </head>
 <body>
@@ -377,14 +380,14 @@
 
     <div class="ref-badges">
       <span class="ref-badge gold" id="badgeVersion">Contract Version: 1.0</span>
-      <span class="ref-badge" id="badgeReference">Contract Reference: ‚Äî</span>
+      <span class="ref-badge" id="badgeReference">Contract Reference: ù</span>
     </div>
 
     <nav class="progress-bar" aria-label="Progress">
       <div class="progress-step active" data-step="1">1. Employee Details</div>
       <div class="progress-step" data-step="2">2. Contract Setup</div>
       <div class="progress-step" data-step="3">3. Review Contract</div>
-      <div class="progress-step" data-step="4">4. Signatures</div>
+      <div class="progress-step" data-step="4">4. Employee Signature</div>
       <div class="progress-step" data-step="5">5. Generate PDF</div>
     </nav>
 
@@ -470,6 +473,19 @@
               <input type="text" id="directorName" name="directorName" required>
               <span class="error-msg">Director name is required.</span>
             </div>
+            <div class="form-group" id="fgDirectorSignature">
+              <label for="directorSignatureCanvas">Director signature <span aria-hidden="true">*</span></label>
+              <p style="margin:0 0 0.5rem;font-size:0.85rem;color:var(--grey-500);">Sign here as director. This signature will appear on the contract.</p>
+              <div class="signature-pad-wrap">
+                <canvas id="directorSignatureCanvas" width="500" height="150" aria-label="Director signature pad"></canvas>
+              </div>
+              <button type="button" class="btn-secondary" id="clearDirectorSignature">Clear Director Signature</button>
+              <span class="error-msg" id="directorSigError">Director signature is required.</span>
+            </div>
+            <div class="form-group">
+              <label for="directorSignatureDate">Director signature date</label>
+              <input type="text" id="directorSignatureDate" readonly>
+            </div>
             <div class="form-group hr-notes">
               <label for="hrNotes">Internal HR notes</label>
               <textarea id="hrNotes" name="hrNotes" rows="3" placeholder="Internal use only ù not included in contract"></textarea>
@@ -483,7 +499,7 @@
           </div>
 
           <div class="step-panel" data-step="4">
-            <h2>Step 4: Signatures</h2>
+            <h2>Step 4: Employee Signature</h2>
 
             <div class="signature-section">
               <h3>Employee signature</h3>
@@ -510,23 +526,8 @@
               </div>
             </div>
 
-            <div class="signature-section">
-              <h3>Director signature</h3>
-              <div class="form-group">
-                <label for="directorSignatureCanvas">Director signature <span aria-hidden="true">*</span></label>
-                <div class="signature-pad-wrap">
-                  <canvas id="directorSignatureCanvas" width="500" height="150" aria-label="Director signature pad"></canvas>
-                </div>
-                <button type="button" class="btn-secondary" id="clearDirectorSignature">Clear Director Signature</button>
-              </div>
-              <div class="form-group">
-                <label for="directorSignatureDate">Director signature date</label>
-                <input type="text" id="directorSignatureDate" readonly>
-              </div>
-            </div>
-
             <div class="warning-box" id="signatureWarning">
-              The contract cannot be generated until the employee and director have signed, the employee has typed their full name, and the acknowledgement is ticked.
+              The contract cannot be generated until the employee has signed, typed their full name, and acknowledged the terms. The director must sign in Step 2.
             </div>
           </div>
 
@@ -705,6 +706,7 @@
   let currentStep = 1, contractReference = '', signatureDataUrl = '', directorSignatureDataUrl = '';
   let canvas, ctx, employeePadApi;
   let directorCanvas, directorCtx, directorPadApi;
+  let employeePadReady = false, directorPadReady = false;
   const $ = (id) => document.getElementById(id);
 
   function formatUKDate(d) {
@@ -858,6 +860,8 @@
       $('fgPlace').classList.toggle('invalid', places.length === 0);
       if (!places.length) valid = false;
       show('fgDirector', $('directorName').value.trim().length > 0);
+      $('fgDirectorSignature').classList.toggle('invalid', !directorSignatureDataUrl);
+      if (!directorSignatureDataUrl) valid = false;
     }
     return valid;
   }
@@ -884,12 +888,45 @@
     });
     $('btnPrev').disabled = step === 1;
     $('btnNext').textContent = step === 5 ? 'Finish' : 'Next';
-    if (step === 4) {
-      const todayStr = formatUKDate(new Date().toISOString().slice(0, 10));
-      $('employeeSignatureDate').value = todayStr;
+    const todayStr = formatUKDate(new Date().toISOString().slice(0, 10));
+    if (step === 2) {
       $('directorSignatureDate').value = todayStr;
+      ensureDirectorPad();
+    }
+    if (step === 4) {
+      $('employeeSignatureDate').value = todayStr;
+      ensureEmployeePad();
     }
     updatePdfButton();
+  }
+  function ensureEmployeePad() {
+    if (employeePadReady) {
+      employeePadApi.resize();
+      return;
+    }
+    canvas = $('signatureCanvas');
+    employeePadApi = setupSignaturePad(canvas, { drawing: false }, (url) => {
+      signatureDataUrl = url;
+      updatePreview();
+      updatePdfButton();
+    });
+    ctx = employeePadApi.context;
+    employeePadReady = true;
+  }
+  function ensureDirectorPad() {
+    if (directorPadReady) {
+      directorPadApi.resize();
+      return;
+    }
+    directorCanvas = $('directorSignatureCanvas');
+    directorPadApi = setupSignaturePad(directorCanvas, { drawing: false }, (url) => {
+      directorSignatureDataUrl = url;
+      $('fgDirectorSignature').classList.remove('invalid');
+      updatePreview();
+      updatePdfButton();
+    });
+    directorCtx = directorPadApi.context;
+    directorPadReady = true;
   }
   function setupSignaturePad(targetCanvas, padState, onComplete) {
     const context = targetCanvas.getContext('2d');
@@ -936,21 +973,7 @@
     return { context, resize, clear: () => { resize(); } };
   }
   function initCanvas() {
-    canvas = $('signatureCanvas');
-    const employeePad = setupSignaturePad(canvas, { drawing: false }, (url) => {
-      signatureDataUrl = url;
-      updatePreview();
-      updatePdfButton();
-    });
-    employeePadApi = employeePad;
-    ctx = employeePad.context;
-    directorCanvas = $('directorSignatureCanvas');
-    directorPadApi = setupSignaturePad(directorCanvas, { drawing: false }, (url) => {
-      directorSignatureDataUrl = url;
-      updatePreview();
-      updatePdfButton();
-    });
-    directorCtx = directorPadApi.context;
+    /* Pads initialise when their step is shown (hidden steps have zero canvas width). */
   }
   function clearSignature() {
     employeePadApi.clear();
@@ -1061,6 +1084,7 @@
   function init() {
     contractReference = generateReference();
     $('employeeSignatureDate').value = formatUKDate(new Date().toISOString().slice(0, 10));
+    $('directorSignatureDate').value = formatUKDate(new Date().toISOString().slice(0, 10));
     initCanvas();
     bindEvents();
     renderRecent();
