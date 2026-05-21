@@ -352,6 +352,45 @@
     #pdfSource { position: absolute; left: -9999px; width: 210mm; padding: 20mm; font-size: 11pt; line-height: 1.5; }
     .hidden { display: none !important; }
     #otherLocationWrap { margin-top: 0.5rem; }
+    .venue-hours-container {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--soft-blue-light);
+      border: 1px solid rgba(74, 124, 155, 0.25);
+      border-radius: var(--radius);
+      border-left: 4px solid var(--navy);
+    }
+    .venue-hours-container.hidden { display: none; }
+    .venue-hours-intro {
+      margin: 0 0 0.75rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .venue-hours-row {
+      margin-bottom: 0.75rem;
+    }
+    .venue-hours-row:last-child { margin-bottom: 0; }
+    .venue-hours-row label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 0.35rem;
+    }
+    .venue-hours-row input {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+    .venue-hours-row input:focus {
+      outline: none;
+      border-color: var(--soft-blue);
+      box-shadow: 0 0 0 3px rgba(74, 124, 155, 0.25);
+    }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
     #fgPlace fieldset { border: none; padding: 0; margin: 0; }
     #fgPlace.invalid .error-msg { display: block; }
@@ -479,10 +518,7 @@
                 </div>
                 <span class="error-msg" id="placeError">At least one place of work is required.</span>
               </fieldset>
-            </div>
-            <div class="form-group">
-              <label for="normalHours">Normal hours of work</label>
-              <input type="text" id="normalHours" name="normalHours" value="Variable hours">
+              <div id="venueHoursContainer" class="venue-hours-container hidden" aria-live="polite"></div>
             </div>
             <div class="form-group" id="fgDirector">
               <label for="directorName">Director name <span aria-hidden="true">*</span></label>
@@ -723,6 +759,7 @@
   let canvas, ctx, employeePadApi;
   let directorCanvas, directorCtx, directorPadApi;
   let employeePadReady = false, directorPadReady = false;
+  const venueHoursStore = {};
   const $ = (id) => document.getElementById(id);
 
   function formatUKDate(d) {
@@ -740,15 +777,66 @@
     const role = $('role').value, scale = $('scale').value;
     return (role && scale && RATE_TABLE[role]) ? RATE_TABLE[role][scale] : null;
   }
-  function getPlaces() {
-    const places = [];
+  function getSelectedVenues() {
+    const venues = [];
     document.querySelectorAll('#placeCheckboxes input:checked').forEach((cb) => {
       if (cb.value === 'Other') {
         const o = $('otherLocation').value.trim();
-        if (o) places.push(o);
-      } else places.push(cb.value);
+        venues.push({ key: 'other:' + (o || '__pending__'), name: o || 'Other (specify location above)' });
+      } else {
+        venues.push({ key: cb.value, name: cb.value });
+      }
     });
-    return places;
+    return venues;
+  }
+  function getPlaces() {
+    return getSelectedVenues()
+      .filter((v) => !v.key.startsWith('other:') || v.key !== 'other:__pending__')
+      .map((v) => v.name);
+  }
+  function syncVenueHoursFromInputs() {
+    document.querySelectorAll('[data-venue-hours]').forEach((inp) => {
+      venueHoursStore[inp.dataset.venueKey] = inp.value;
+    });
+  }
+  function renderVenueHoursInputs() {
+    const container = $('venueHoursContainer');
+    syncVenueHoursFromInputs();
+    const venues = getSelectedVenues();
+    if (!venues.length) {
+      container.classList.add('hidden');
+      container.innerHTML = '';
+      return;
+    }
+    container.classList.remove('hidden');
+    let html = '<p class="venue-hours-intro">Normal hours of work at each selected venue</p>';
+    venues.forEach((v, i) => {
+      const val = venueHoursStore[v.key] || 'Variable hours';
+      venueHoursStore[v.key] = val;
+      const id = 'venue_hours_' + i;
+      const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      html +=
+        '<div class="venue-hours-row">' +
+        '<label for="' + id + '">' + esc(v.name) + '</label>' +
+        '<input type="text" id="' + id + '" data-venue-key="' + esc(v.key) + '" data-venue-hours value="' + esc(val) + '" placeholder="e.g. Variable hours">' +
+        '</div>';
+    });
+    container.innerHTML = html;
+    container.querySelectorAll('[data-venue-hours]').forEach((inp) => {
+      inp.addEventListener('input', () => {
+        venueHoursStore[inp.dataset.venueKey] = inp.value;
+        updatePreview();
+      });
+    });
+  }
+  function getNormalHoursText() {
+    const venues = getSelectedVenues().filter((v) => v.key !== 'other:__pending__');
+    if (!venues.length) return EM;
+    syncVenueHoursFromInputs();
+    return venues.map((v) => {
+      const hours = (venueHoursStore[v.key] || 'Variable hours').trim() || 'Variable hours';
+      return v.name + ': ' + hours;
+    }).join('\n');
   }
   function getFormData() {
     const rate = getDeliveryRate(), places = getPlaces();
@@ -767,7 +855,7 @@
       JOB_TITLE: $('role').value, ROLE_SCALE: $('scale').value,
       DELIVERY_RATE: rate != null ? String(rate) : EM, ADMIN_RATE,
       PLACE_OF_WORK: places.length ? places.map((p, i) => (i + 1) + '. ' + p).join('\n') : EM,
-      NORMAL_HOURS_OF_WORK: $('normalHours').value.trim() || 'Variable hours',
+      NORMAL_HOURS_OF_WORK: getNormalHoursText(),
       DIRECTOR_NAME: $('directorName').value.trim(),
       EMPLOYEE_SIGNATURE_DATE: $('employeeSignatureDate').value || formatUKDate(today),
       EMPLOYEE_SIGNATURE: signatureDataUrl ? '[Signed electronically]' : (typed || EM),
@@ -1080,13 +1168,20 @@
   function bindEvents() {
     $('role').addEventListener('change', () => { $('scale').disabled = !$('role').value; $('scale').value = ''; updatePreview(); });
     $('scale').addEventListener('change', updatePreview);
-    ['employeeName', 'employeeAddress', 'employeeEmail', 'contractDate', 'commencementDate', 'directorName', 'normalHours', 'typedName'].forEach((id) => {
+    ['employeeName', 'employeeAddress', 'employeeEmail', 'contractDate', 'commencementDate', 'directorName', 'typedName'].forEach((id) => {
       $(id).addEventListener('input', () => { if (id === 'employeeName') contractReference = ''; updatePreview(); });
     });
     document.querySelectorAll('#placeCheckboxes input').forEach((cb) => {
-      cb.addEventListener('change', () => { $('otherLocationWrap').classList.toggle('hidden', !$('placeOther').checked); updatePreview(); });
+      cb.addEventListener('change', () => {
+        $('otherLocationWrap').classList.toggle('hidden', !$('placeOther').checked);
+        renderVenueHoursInputs();
+        updatePreview();
+      });
     });
-    $('otherLocation').addEventListener('input', updatePreview);
+    $('otherLocation').addEventListener('input', () => {
+      if ($('placeOther').checked) renderVenueHoursInputs();
+      updatePreview();
+    });
     $('acknowledgement').addEventListener('change', updatePdfButton);
     $('typedName').addEventListener('input', updatePdfButton);
     $('clearSignature').addEventListener('click', clearSignature);
