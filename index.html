@@ -109,8 +109,63 @@
     .form-group .error-msg { color: var(--error); font-size: 0.85rem; margin-top: 0.25rem; display: none; }
     .form-group.invalid input, .form-group.invalid select, .form-group.invalid textarea { border-color: var(--error); }
     .form-group.invalid .error-msg { display: block; }
-    .checkbox-group { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; }
-    .checkbox-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; cursor: pointer; }
+    .form-group input[type="checkbox"],
+    .form-group input[type="radio"] {
+      width: 1.125rem;
+      height: 1.125rem;
+      min-width: 1.125rem;
+      margin: 0;
+      flex-shrink: 0;
+      accent-color: var(--navy);
+      cursor: pointer;
+    }
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    @media (min-width: 520px) {
+      .checkbox-group { grid-template-columns: 1fr 1fr; }
+    }
+    .checkbox-group .place-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-weight: 400;
+      cursor: pointer;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      background: var(--white);
+      line-height: 1.35;
+      margin: 0;
+    }
+    .checkbox-group .place-option:hover { border-color: var(--soft-blue); background: var(--soft-blue-light); }
+    .checkbox-group .place-option:has(input:checked) {
+      border-color: var(--navy);
+      background: var(--soft-blue-light);
+    }
+    .checkbox-group .place-option input[type="checkbox"] { margin-top: 0.2rem; }
+    .form-group .ack-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-weight: 400;
+      cursor: pointer;
+      line-height: 1.45;
+    }
+    .form-group .ack-label input[type="checkbox"] { margin-top: 0.2rem; }
+    .signature-section {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--grey-200);
+    }
+    .signature-section h3 {
+      margin: 0 0 1rem;
+      font-size: 1rem;
+      color: var(--navy);
+    }
     .rate-display {
       background: var(--soft-blue-light);
       padding: 0.75rem 1rem;
@@ -164,7 +219,13 @@
     .preview-doc .doc-title { text-align: center; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
     .preview-doc .meta { font-size: 0.8rem; color: var(--grey-500); margin-bottom: 1rem; }
     .signature-pad-wrap { border: 2px solid var(--grey-200); border-radius: var(--radius); background: var(--white); margin: 0.5rem 0; }
-    #signatureCanvas { display: block; width: 100%; height: 150px; cursor: crosshair; touch-action: none; }
+    .signature-pad-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 150px;
+      cursor: crosshair;
+      touch-action: none;
+    }
     .warning-box {
       background: #fef3c7;
       border: 1px solid #d97706;
@@ -228,14 +289,14 @@
 
     <div class="ref-badges">
       <span class="ref-badge gold" id="badgeVersion">Contract Version: 1.0</span>
-      <span class="ref-badge" id="badgeReference">Contract Reference: ‚Äî</span>
+      <span class="ref-badge" id="badgeReference">Contract Reference: ù</span>
     </div>
 
     <nav class="progress-bar" aria-label="Progress">
       <div class="progress-step active" data-step="1">1. Employee Details</div>
       <div class="progress-step" data-step="2">2. Contract Setup</div>
       <div class="progress-step" data-step="3">3. Review Contract</div>
-      <div class="progress-step" data-step="4">4. Employee Signature</div>
+      <div class="progress-step" data-step="4">4. Signatures</div>
       <div class="progress-step" data-step="5">5. Generate PDF</div>
     </nav>
 
@@ -299,11 +360,11 @@
               <fieldset>
                 <legend style="font-weight:500;margin-bottom:0.35rem;color:var(--navy);font-size:0.9rem;">Place of work <span aria-hidden="true">*</span></legend>
                 <div class="checkbox-group" id="placeCheckboxes">
-                  <label><input type="checkbox" name="place" value="Acton Centre (W3 6LE)"> Acton Centre (W3 6LE)</label>
-                  <label><input type="checkbox" name="place" value="SwimFarm Centre (W10 6RP)"> SwimFarm Centre (W10 6RP)</label>
-                  <label><input type="checkbox" name="place" value="Westway Sports Centre (W10 6RP)"> Westway Sports Centre (W10 6RP)</label>
-                  <label><input type="checkbox" name="place" value="Northolt Centre (UB5 4AB)"> Northolt Centre (UB5 4AB)</label>
-                  <label><input type="checkbox" name="place" id="placeOther" value="Other"> Other</label>
+                  <label class="place-option"><input type="checkbox" name="place" value="Acton Centre (W3 6LE)"><span>Acton Centre (W3 6LE)</span></label>
+                  <label class="place-option"><input type="checkbox" name="place" value="SwimFarm Centre (W10 6RP)"><span>SwimFarm Centre (W10 6RP)</span></label>
+                  <label class="place-option"><input type="checkbox" name="place" value="Westway Sports Centre (W10 6RP)"><span>Westway Sports Centre (W10 6RP)</span></label>
+                  <label class="place-option"><input type="checkbox" name="place" value="Northolt Centre (UB5 4AB)"><span>Northolt Centre (UB5 4AB)</span></label>
+                  <label class="place-option"><input type="checkbox" name="place" id="placeOther" value="Other"><span>Other</span></label>
                 </div>
                 <div id="otherLocationWrap" class="hidden">
                   <label for="otherLocation" class="sr-only">Other location</label>
@@ -321,10 +382,6 @@
               <input type="text" id="directorName" name="directorName" required>
               <span class="error-msg">Director name is required.</span>
             </div>
-            <div class="form-group">
-              <label for="directorSignatureName">Director signature name</label>
-              <input type="text" id="directorSignatureName" name="directorSignatureName" placeholder="Typed signature for director">
-            </div>
             <div class="form-group hr-notes">
               <label for="hrNotes">Internal HR notes</label>
               <textarea id="hrNotes" name="hrNotes" rows="3" placeholder="Internal use only ù not included in contract"></textarea>
@@ -338,27 +395,50 @@
           </div>
 
           <div class="step-panel" data-step="4">
-            <h2>Step 4: Employee Signature</h2>
-            <div class="form-group">
-              <label for="typedName">Typed full name confirmation <span aria-hidden="true">*</span></label>
-              <input type="text" id="typedName" placeholder="Type full name as on contract">
-            </div>
-            <div class="form-group">
-              <label>Employee signature <span aria-hidden="true">*</span></label>
-              <div class="signature-pad-wrap">
-                <canvas id="signatureCanvas" width="500" height="150" aria-label="Signature pad"></canvas>
+            <h2>Step 4: Signatures</h2>
+
+            <div class="signature-section">
+              <h3>Employee signature</h3>
+              <div class="form-group">
+                <label for="typedName">Typed full name confirmation <span aria-hidden="true">*</span></label>
+                <input type="text" id="typedName" placeholder="Type full name as on contract">
               </div>
-              <button type="button" class="btn-secondary" id="clearSignature">Clear Signature</button>
+              <div class="form-group">
+                <label for="signatureCanvas">Employee signature <span aria-hidden="true">*</span></label>
+                <div class="signature-pad-wrap">
+                  <canvas id="signatureCanvas" width="500" height="150" aria-label="Employee signature pad"></canvas>
+                </div>
+                <button type="button" class="btn-secondary" id="clearSignature">Clear Employee Signature</button>
+              </div>
+              <div class="form-group">
+                <label for="employeeSignatureDate">Employee signature date</label>
+                <input type="text" id="employeeSignatureDate" readonly>
+              </div>
+              <div class="form-group">
+                <label class="ack-label" for="acknowledgement">
+                  <input type="checkbox" id="acknowledgement" required>
+                  <span>I confirm that I have read, understood and agree to the terms of this employment contract. <span aria-hidden="true">*</span></span>
+                </label>
+              </div>
             </div>
-            <div class="form-group">
-              <label>Signature date</label>
-              <input type="text" id="employeeSignatureDate" readonly>
+
+            <div class="signature-section">
+              <h3>Director signature</h3>
+              <div class="form-group">
+                <label for="directorSignatureCanvas">Director signature <span aria-hidden="true">*</span></label>
+                <div class="signature-pad-wrap">
+                  <canvas id="directorSignatureCanvas" width="500" height="150" aria-label="Director signature pad"></canvas>
+                </div>
+                <button type="button" class="btn-secondary" id="clearDirectorSignature">Clear Director Signature</button>
+              </div>
+              <div class="form-group">
+                <label for="directorSignatureDate">Director signature date</label>
+                <input type="text" id="directorSignatureDate" readonly>
+              </div>
             </div>
-            <div class="form-group">
-              <label><input type="checkbox" id="acknowledgement" required> I confirm that I have read, understood and agree to the terms of this employment contract. <span aria-hidden="true">*</span></label>
-            </div>
+
             <div class="warning-box" id="signatureWarning">
-              The contract cannot be generated until the employee has signed, typed their full name, and acknowledged the terms.
+              The contract cannot be generated until the employee and director have signed, the employee has typed their full name, and the acknowledgement is ticked.
             </div>
           </div>
 
@@ -534,8 +614,9 @@
     'Timestamp: {{SIGNED_TIMESTAMP}}'
   ].join('\n');
 
-  let currentStep = 1, contractReference = '', signatureDataUrl = '';
-  let canvas, ctx, drawing = false;
+  let currentStep = 1, contractReference = '', signatureDataUrl = '', directorSignatureDataUrl = '';
+  let canvas, ctx, employeePadApi;
+  let directorCanvas, directorCtx, directorPadApi;
   const $ = (id) => document.getElementById(id);
 
   function formatUKDate(d) {
@@ -565,7 +646,7 @@
   }
   function getFormData() {
     const rate = getDeliveryRate(), places = getPlaces();
-    const directorSig = $('directorSignatureName').value.trim() || $('directorName').value.trim();
+    const directorSig = directorSignatureDataUrl ? '[Signed electronically]' : $('directorName').value.trim();
     const typed = $('typedName').value.trim(), ack = $('acknowledgement').checked;
     const now = formatDateTime(), today = new Date().toISOString().slice(0, 10);
     return {
@@ -584,10 +665,10 @@
       DIRECTOR_NAME: $('directorName').value.trim(),
       EMPLOYEE_SIGNATURE_DATE: $('employeeSignatureDate').value || formatUKDate(today),
       EMPLOYEE_SIGNATURE: signatureDataUrl ? '[Signed electronically]' : (typed || EM),
-      DIRECTOR_SIGNATURE_DATE: formatUKDate(today),
+      DIRECTOR_SIGNATURE_DATE: $('directorSignatureDate').value || formatUKDate(today),
       DIRECTOR_SIGNATURE: directorSig || EM,
       EMPLOYEE_ACKNOWLEDGEMENT: ack ? 'Confirmed' : 'Pending',
-      SIGNED_TIMESTAMP: ack && signatureDataUrl ? now : EM
+      SIGNED_TIMESTAMP: ack && signatureDataUrl && directorSignatureDataUrl ? now : EM
     };
   }
   function fillTemplate(data) {
@@ -642,7 +723,7 @@
     if (!validateAllRequired()) return false;
     const typed = $('typedName').value.trim(), name = $('employeeName').value.trim();
     if (!typed || typed.toLowerCase() !== name.toLowerCase()) return false;
-    if (!signatureDataUrl || !$('acknowledgement').checked) return false;
+    if (!signatureDataUrl || !directorSignatureDataUrl || !$('acknowledgement').checked) return false;
     return true;
   }
   function updatePdfButton() {
@@ -660,39 +741,86 @@
     });
     $('btnPrev').disabled = step === 1;
     $('btnNext').textContent = step === 5 ? 'Finish' : 'Next';
-    if (step === 4) $('employeeSignatureDate').value = formatUKDate(new Date().toISOString().slice(0, 10));
+    if (step === 4) {
+      const todayStr = formatUKDate(new Date().toISOString().slice(0, 10));
+      $('employeeSignatureDate').value = todayStr;
+      $('directorSignatureDate').value = todayStr;
+    }
     updatePdfButton();
   }
-  function initCanvas() {
-    canvas = $('signatureCanvas');
-    ctx = canvas.getContext('2d');
+  function setupSignaturePad(targetCanvas, padState, onComplete) {
+    const context = targetCanvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = 150 * dpr;
-    ctx.scale(dpr, dpr);
-    canvas.style.height = '150px';
-    ctx.strokeStyle = '#0f2744';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
+    const resize = () => {
+      const rect = targetCanvas.getBoundingClientRect();
+      targetCanvas.width = Math.max(rect.width, 300) * dpr;
+      targetCanvas.height = 150 * dpr;
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      context.scale(dpr, dpr);
+      targetCanvas.style.height = '150px';
+      context.strokeStyle = '#0f2744';
+      context.lineWidth = 2;
+      context.lineCap = 'round';
+    };
+    resize();
     const pos = (e) => {
-      const r = canvas.getBoundingClientRect();
+      const r = targetCanvas.getBoundingClientRect();
       const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
       const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
       return { x, y };
     };
-    const start = (e) => { e.preventDefault(); drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-    const move = (e) => { if (!drawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
-    const end = () => { if (!drawing) return; drawing = false; signatureDataUrl = canvas.toDataURL('image/png'); updatePreview(); updatePdfButton(); };
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', move);
-    canvas.addEventListener('mouseup', end);
-    canvas.addEventListener('mouseleave', end);
-    canvas.addEventListener('touchstart', start, { passive: false });
-    canvas.addEventListener('touchmove', move, { passive: false });
-    canvas.addEventListener('touchend', end);
+    const start = (e) => { e.preventDefault(); padState.drawing = true; const p = pos(e); context.beginPath(); context.moveTo(p.x, p.y); };
+    const move = (e) => {
+      if (!padState.drawing) return;
+      e.preventDefault();
+      const p = pos(e);
+      context.lineTo(p.x, p.y);
+      context.stroke();
+    };
+    const end = () => {
+      if (!padState.drawing) return;
+      padState.drawing = false;
+      onComplete(targetCanvas.toDataURL('image/png'));
+    };
+    targetCanvas.addEventListener('mousedown', start);
+    targetCanvas.addEventListener('mousemove', move);
+    targetCanvas.addEventListener('mouseup', end);
+    targetCanvas.addEventListener('mouseleave', end);
+    targetCanvas.addEventListener('touchstart', start, { passive: false });
+    targetCanvas.addEventListener('touchmove', move, { passive: false });
+    targetCanvas.addEventListener('touchend', end);
+    window.addEventListener('resize', resize);
+    return { context, resize, clear: () => { resize(); } };
   }
-  function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); signatureDataUrl = ''; updatePreview(); updatePdfButton(); }
+  function initCanvas() {
+    canvas = $('signatureCanvas');
+    const employeePad = setupSignaturePad(canvas, { drawing: false }, (url) => {
+      signatureDataUrl = url;
+      updatePreview();
+      updatePdfButton();
+    });
+    employeePadApi = employeePad;
+    ctx = employeePad.context;
+    directorCanvas = $('directorSignatureCanvas');
+    directorPadApi = setupSignaturePad(directorCanvas, { drawing: false }, (url) => {
+      directorSignatureDataUrl = url;
+      updatePreview();
+      updatePdfButton();
+    });
+    directorCtx = directorPadApi.context;
+  }
+  function clearSignature() {
+    employeePadApi.clear();
+    signatureDataUrl = '';
+    updatePreview();
+    updatePdfButton();
+  }
+  function clearDirectorSignature() {
+    directorPadApi.clear();
+    directorSignatureDataUrl = '';
+    updatePreview();
+    updatePdfButton();
+  }
   function saveToLocalStorage(meta) {
     const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     list.unshift(meta);
@@ -713,17 +841,26 @@
   }
   function buildPdfHtml(data) {
     let text = fillTemplate(data);
-    const sigImg = signatureDataUrl
+    const employeeSigImg = signatureDataUrl
       ? '<img src="' + signatureDataUrl + '" alt="Employee signature" style="max-width:220px;height:70px;display:block;margin-top:6px;">'
       : '';
-    text = text.replace('Signature: [Signed electronically]', 'Signature:\n' + (signatureDataUrl ? '[See image below]' : ''));
+    const directorSigImg = directorSignatureDataUrl
+      ? '<img src="' + directorSignatureDataUrl + '" alt="Director signature" style="max-width:220px;height:70px;display:block;margin-top:6px;">'
+      : '';
     const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    let employeeBlockDone = false, directorBlockDone = false;
     const paras = text.split('\n\n').map((b) => {
       const html = esc(b);
-      if (b.indexOf('EMPLOYEE SIGNATURE') >= 0 && sigImg) {
-        return '<p style="margin:0 0 10px;white-space:pre-wrap;font-size:10pt;line-height:1.45;">' + html + '</p>' + sigImg;
+      const base = '<p style="margin:0 0 10px;white-space:pre-wrap;font-size:10pt;line-height:1.45;">' + html + '</p>';
+      if (!employeeBlockDone && b.indexOf('EMPLOYEE SIGNATURE') >= 0) {
+        employeeBlockDone = true;
+        return base + employeeSigImg;
       }
-      return '<p style="margin:0 0 10px;white-space:pre-wrap;font-size:10pt;line-height:1.45;">' + html + '</p>';
+      if (!directorBlockDone && b.indexOf('DIRECTOR SIGNATURE') >= 0) {
+        directorBlockDone = true;
+        return base + directorSigImg;
+      }
+      return base;
     }).join('');
     return '<div style="font-family:Georgia,serif;color:#111;padding:16px;max-width:700px;">' +
       '<h1 style="text-align:center;font-size:13pt;margin:0 0 14px;">ZERO HOURS EMPLOYMENT CONTRACT</h1>' + paras + '</div>';
@@ -740,6 +877,7 @@
     const data = getFormData();
     data.CONTRACT_REFERENCE = contractReference;
     data.EMPLOYEE_SIGNATURE = '[Signed electronically]';
+    data.DIRECTOR_SIGNATURE = '[Signed electronically]';
     data.EMPLOYEE_ACKNOWLEDGEMENT = 'Confirmed';
     data.SIGNED_TIMESTAMP = formatDateTime();
     const pdfEl = $('pdfSource');
@@ -758,7 +896,7 @@
   function bindEvents() {
     $('role').addEventListener('change', () => { $('scale').disabled = !$('role').value; $('scale').value = ''; updatePreview(); });
     $('scale').addEventListener('change', updatePreview);
-    ['employeeName', 'employeeAddress', 'employeeEmail', 'contractDate', 'commencementDate', 'directorName', 'directorSignatureName', 'normalHours', 'typedName'].forEach((id) => {
+    ['employeeName', 'employeeAddress', 'employeeEmail', 'contractDate', 'commencementDate', 'directorName', 'normalHours', 'typedName'].forEach((id) => {
       $(id).addEventListener('input', () => { if (id === 'employeeName') contractReference = ''; updatePreview(); });
     });
     document.querySelectorAll('#placeCheckboxes input').forEach((cb) => {
@@ -768,6 +906,7 @@
     $('acknowledgement').addEventListener('change', updatePdfButton);
     $('typedName').addEventListener('input', updatePdfButton);
     $('clearSignature').addEventListener('click', clearSignature);
+    $('clearDirectorSignature').addEventListener('click', clearDirectorSignature);
     $('btnNext').addEventListener('click', () => { if (currentStep < 5) { if (currentStep <= 2 && !validateStep(currentStep)) return; setStep(currentStep + 1); } });
     $('btnPrev').addEventListener('click', () => { if (currentStep > 1) setStep(currentStep - 1); });
     $('generatePdf').addEventListener('click', generatePdf);
