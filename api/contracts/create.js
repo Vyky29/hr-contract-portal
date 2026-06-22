@@ -19,6 +19,7 @@ export default async function handler(req, res) {
       formPayload,
       directorSignature,
       employeeEmail,
+      portalAuthEmail,
       employeeName,
       sendEmail: shouldSend = false,
       publishToPortal: shouldPublishPortal = true,
@@ -31,11 +32,16 @@ export default async function handler(req, res) {
     }
 
     const supabase = getSupabase();
-    const userId = await resolvePortalUserId(supabase, employeeEmail);
+    const contactEmail = employeeEmail.toLowerCase().trim();
+    const authLookupEmail = String(portalAuthEmail || formPayload?.portalAuthEmail || employeeEmail)
+      .trim()
+      .toLowerCase();
+    const userId = await resolvePortalUserId(supabase, authLookupEmail);
     if (!userId) {
+      const loginHint = formPayload?.portalStaffLogin ? ` Selected staff: ${formPayload.portalStaffLogin}.` : '';
       return json(res, 400, {
         error:
-          'No Portal account found for this email. The employee must exist in Supabase Auth (same email as staff login) before sending a contract.'
+          `No Portal account found for this staff member (${authLookupEmail}).${loginHint} Ensure they exist in Supabase Auth (staff PIN sync).`
       });
     }
 
@@ -52,7 +58,7 @@ export default async function handler(req, res) {
       status: 'awaiting_employee',
       user_id: userId,
       employee_name: employeeName,
-      employee_email: employeeEmail.toLowerCase().trim(),
+      employee_email: contactEmail,
       employee_address: templateData.EMPLOYEE_ADDRESS || '',
       contract_date: formPayload?.contractDate || null,
       commencement_date: formPayload?.commencementDate || null,
