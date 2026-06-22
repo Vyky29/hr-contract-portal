@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Employment Contract | clubSENsational</title>
+  <style>
+    :root {
+      --navy: #0f2744;
+      --navy-light: #1a3a5c;
+      --soft-blue: #4a7c9b;
+      --soft-blue-light: #e8f0f6;
+      --gold: #c9a227;
+      --white: #ffffff;
+      --grey-100: #f7f9fb;
+      --grey-200: #e2e8f0;
+      --grey-500: #64748b;
+      --grey-700: #334155;
+      --error: #b91c1c;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(15, 39, 68, 0.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--grey-700);
+      background: var(--grey-100);
+    }
+    .header {
+      background: var(--white);
+      border-bottom: 4px solid var(--gold);
+      box-shadow: var(--shadow);
+    }
+    .header-logo-band {
+      padding: 1.25rem 1.5rem 0.75rem;
+      text-align: center;
+      border-bottom: 1px solid var(--grey-200);
+    }
+    .header-logo {
+      width: 240px;
+      max-width: 85vw;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .header-content {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: var(--white);
+      padding: 1rem 1.5rem 1.25rem;
+      text-align: center;
+    }
+    .header-content h1 { margin: 0 0 0.25rem; font-size: 1.35rem; }
+    .header-content p { margin: 0; opacity: 0.92; font-size: 0.9rem; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 1.25rem 1.5rem 2.5rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: 1fr 1.1fr; }
+    }
+    .panel {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.25rem 1.5rem;
+    }
+    .panel h2 {
+      margin: 0 0 1rem;
+      font-size: 1.1rem;
+      color: var(--navy);
+      border-bottom: 2px solid var(--soft-blue-light);
+      padding-bottom: 0.5rem;
+    }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: 500; margin-bottom: 0.35rem; color: var(--navy); font-size: 0.9rem; }
+    .form-group input[type="text"] {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      font-size: 1rem;
+    }
+    .ack-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-weight: 400;
+      cursor: pointer;
+      line-height: 1.45;
+    }
+    .ack-label input { margin-top: 0.2rem; accent-color: var(--navy); }
+    .signature-pad-wrap {
+      border: 2px dashed var(--grey-200);
+      border-radius: var(--radius);
+      background: var(--grey-100);
+      touch-action: none;
+    }
+    canvas { display: block; width: 100%; cursor: crosshair; }
+    .btn-primary, .btn-secondary, .btn-gold {
+      padding: 0.65rem 1.25rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--navy); color: var(--white); }
+    .btn-secondary { background: var(--grey-200); color: var(--navy); }
+    .btn-gold { background: var(--gold); color: var(--navy); width: 100%; min-height: 48px; }
+    .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+    .warning-box {
+      background: #fffbeb;
+      border: 1px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .success-box {
+      background: #ecfdf5;
+      border: 1px solid #86efac;
+      border-radius: var(--radius);
+      padding: 1rem;
+      color: #166534;
+    }
+    .error-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: var(--radius);
+      padding: 1rem;
+      color: var(--error);
+    }
+    .hidden { display: none !important; }
+    .meta { font-size: 0.9rem; color: var(--grey-500); margin-bottom: 1rem; }
+    .preview-doc {
+      max-height: 70vh;
+      overflow-y: auto;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      padding: 0.5rem;
+      background: var(--white);
+    }
+    #pdfSource.hidden { display: none; }
+    /* contract preview styles (shared with HR portal) */
+    .contract-document { font-family: Georgia, serif; color: #111; }
+    .contract-letterhead { background: #fff; padding: 14px 18px 10px; text-align: center; border-bottom: 3px solid #c9a227; }
+    .contract-logo { width: 220px; max-width: 100%; height: auto; display: block; margin: 0 auto; }
+    .letterhead-legal { margin-top: 6px; font-family: Arial, sans-serif; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #0f2744; }
+    .contract-body { padding: 14px 16px; }
+    .contract-doc-title { text-align: center; font-size: 1rem; font-weight: 700; color: #0f2744; text-transform: uppercase; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 2px solid #c9a227; }
+    .contract-opening { text-align: center; font-weight: 600; color: #0f2744; font-size: 0.85rem; }
+    .contract-section h3 { font-family: Arial, sans-serif; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #0f2744; margin: 12px 0 6px; padding-bottom: 3px; border-bottom: 1px solid #c9a227; }
+    .contract-section p { margin: 0 0 8px; font-size: 0.8rem; line-height: 1.45; }
+    .contract-parties { background: #e8f0f6; border-left: 3px solid #0f2744; padding: 8px 10px; margin: 8px 0; font-size: 0.8rem; }
+    .contract-footer { font-size: 0.7rem; color: #64748b; text-align: center; padding: 8px; border-top: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-logo-band">
+      <img src="assets/clubsensational-logo.png?v=2" srcset="assets/clubsensational-logo.png 1x, assets/clubsensational-logo@2x.png?v=2 2x" alt="clubSENsational" class="header-logo" width="240" height="173">
+    </div>
+    <div class="header-content">
+      <h1>Sign your employment contract</h1>
+      <p id="pageEmployeeName">—</p>
+      <p style="font-size:0.85rem;opacity:0.85;">Reference: <span id="pageReference">—</span></p>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="loadingState" class="panel">
+      <p>Loading your contract…</p>
+    </div>
+
+    <div id="errorState" class="panel hidden">
+      <div class="error-box">
+        <strong>Unable to load contract</strong>
+        <p id="errorMessage" style="margin:0.5rem 0 0;"></p>
+      </div>
+    </div>
+
+    <div id="completedState" class="panel hidden">
+      <div class="success-box">
+        <strong>Contract signed successfully</strong>
+        <p style="margin:0.5rem 0 0;">Reference: <span id="completedRef"></span></p>
+        <p style="margin:0.5rem 0 0;">Your signed PDF should have downloaded automatically. A confirmation email will be sent if email is configured.</p>
+      </div>
+    </div>
+
+    <div id="signForm" class="grid hidden">
+      <div class="panel">
+        <h2>Your signature</h2>
+        <p class="meta">Please read the contract on the right, then sign below. Your typed name must match your full name exactly.</p>
+        <div class="form-group">
+          <label for="typedName">Typed full name <span aria-hidden="true">*</span></label>
+          <input type="text" id="typedName" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="signatureCanvas">Signature <span aria-hidden="true">*</span></label>
+          <div class="signature-pad-wrap">
+            <canvas id="signatureCanvas" width="500" height="150" aria-label="Signature pad"></canvas>
+          </div>
+          <button type="button" class="btn-secondary" id="clearSignature" style="margin-top:0.5rem;">Clear signature</button>
+        </div>
+        <div class="form-group">
+          <label class="ack-label" for="acknowledgement">
+            <input type="checkbox" id="acknowledgement">
+            <span>I confirm that I have read, understood and agree to the terms of this employment contract. <span aria-hidden="true">*</span></span>
+          </label>
+        </div>
+        <div class="warning-box" id="signWarning">Complete your signature, typed name (must match contract), and acknowledgement.</div>
+        <button type="button" class="btn-gold" id="submitSign" disabled>Sign and download PDF</button>
+      </div>
+      <div class="panel">
+        <h2>Contract</h2>
+        <div class="preview-doc" id="contractPreview"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pdfSource" class="hidden"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="js/contract-core.js"></script>
+  <script src="js/sign-app.js"></script>
+</body>
+</html>

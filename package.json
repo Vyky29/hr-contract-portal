@@ -1,0 +1,9 @@
+{
+  "name": "hr-contract-portal",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "resend": "^4.1.2"
+  }
+}
