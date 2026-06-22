@@ -407,7 +407,7 @@
     /* Tablet: 640px+ */
     @media (min-width: 640px) {
       .container { padding: 1.5rem 1.75rem 2.5rem; }
-      .contract-types { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+      .contract-types { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
       .checkbox-group { grid-template-columns: 1fr 1fr; }
       .progress-bar { flex-wrap: wrap; }
       .progress-step { flex: 1 1 calc(33.333% - 0.25rem); min-width: 120px; }
@@ -423,7 +423,7 @@
       .contract-letterhead { padding: 1.25rem 1.5rem 0.85rem; }
     }
 
-    /* Desktop: 1024px+ ù form + preview side by side */
+    /* Desktop: 1024px+ ÔøΩ form + preview side by side */
     @media (min-width: 1024px) {
       .container { padding: 1.75rem 2rem 3rem; }
       .main-grid {
@@ -478,7 +478,23 @@
       .checkbox-group { grid-template-columns: 1fr; }
       .btn-row { flex-direction: column; }
       .btn-row button { width: 100%; min-height: 44px; }
-      #generatePdf { width: 100%; min-height: 48px; }
+      #sendContractBtn { width: 100%; min-height: 48px; }
+    .send-link-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--soft-blue-light);
+      border: 1px solid var(--soft-blue);
+      border-radius: var(--radius);
+    }
+    .send-link-box input {
+      width: 100%;
+      font-size: 0.85rem;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+    }
+    .send-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
       .preview-doc {
         max-height: 55vh;
         font-size: 0.8rem;
@@ -523,34 +539,28 @@
     </div>
 
     <div class="contract-types" role="group" aria-label="Contract type">
-      <div class="type-card active" id="typeZero" tabindex="0" aria-pressed="true">
+      <div class="type-card active" id="typeZero" data-contract-kind="zero_hours" tabindex="0" aria-pressed="true">
         <h3>Zero Hours Contract</h3>
         <p style="margin:0;font-size:0.85rem;color:var(--grey-500);">Variable schedule employment</p>
         <span class="badge badge-active">Active</span>
       </div>
-      <div class="type-card disabled" aria-disabled="true">
-        <h3>Part Time Contract</h3>
-        <p style="margin:0;font-size:0.85rem;color:var(--grey-500);">Fixed part-time hours</p>
-        <span class="badge badge-soon">Coming soon</span>
-      </div>
-      <div class="type-card disabled" aria-disabled="true">
-        <h3>Full Time Contract</h3>
-        <p style="margin:0;font-size:0.85rem;color:var(--grey-500);">Full-time employment</p>
-        <span class="badge badge-soon">Coming soon</span>
+      <div class="type-card" id="typeFixed" data-contract-kind="fixed_term" tabindex="0" aria-pressed="false">
+        <h3>Fixed Term Contract</h3>
+        <p style="margin:0;font-size:0.85rem;color:var(--grey-500);">Fixed-term employment with set end date</p>
+        <span class="badge badge-active">Active</span>
       </div>
     </div>
 
     <div class="ref-badges">
       <span class="ref-badge gold" id="badgeVersion">Contract Version: 1.0</span>
-      <span class="ref-badge" id="badgeReference">Contract Reference: ‚Äî</span>
+      <span class="ref-badge" id="badgeReference">Contract Reference: ÔøΩ</span>
     </div>
 
     <nav class="progress-bar" aria-label="Progress">
       <div class="progress-step active" data-step="1">1. Employee Details</div>
       <div class="progress-step" data-step="2">2. Contract Setup</div>
       <div class="progress-step" data-step="3">3. Review Contract</div>
-      <div class="progress-step" data-step="4">4. Employee Signature</div>
-      <div class="progress-step" data-step="5">5. Generate PDF</div>
+      <div class="progress-step" data-step="4">4. Send to Employee</div>
     </nav>
 
     <div class="main-grid">
@@ -587,6 +597,11 @@
               <input type="date" id="commencementDate" name="commencementDate" required>
               <span class="error-msg">Commencement date is required.</span>
             </div>
+            <div class="form-group fixed-term-field hidden" id="fgTermEnd">
+              <label for="termEndDate">Term end date <span aria-hidden="true">*</span></label>
+              <input type="date" id="termEndDate" name="termEndDate">
+              <span class="error-msg">Term end date is required.</span>
+            </div>
             <div class="form-group" id="fgRole">
               <label for="role">Role <span aria-hidden="true">*</span></label>
               <select id="role" name="role" required>
@@ -598,7 +613,7 @@
               </select>
               <span class="error-msg">Role is required.</span>
             </div>
-            <div class="form-group" id="fgScale">
+            <div class="form-group zero-hours-field" id="fgScale">
               <label for="scale">Scale <span aria-hidden="true">*</span></label>
               <select id="scale" name="scale" required disabled>
                 <option value="">Select scale</option>
@@ -607,6 +622,20 @@
                 <option value="Scale 3">Scale 3</option>
               </select>
               <span class="error-msg">Scale is required.</span>
+            </div>
+            <div class="form-group fixed-term-field hidden" id="fgAnnualSalary">
+              <label for="annualSalary">Annual salary (¬£) <span aria-hidden="true">*</span></label>
+              <input type="number" id="annualSalary" name="annualSalary" min="1" step="1" placeholder="e.g. 19000">
+              <span class="error-msg">Annual salary is required.</span>
+            </div>
+            <div class="form-group fixed-term-field hidden" id="fgWeeklyHours">
+              <label for="weeklyHours">Contracted hours per week <span aria-hidden="true">*</span></label>
+              <input type="number" id="weeklyHours" name="weeklyHours" min="1" step="0.5" placeholder="e.g. 24">
+              <span class="error-msg">Weekly hours are required.</span>
+            </div>
+            <div class="form-group fixed-term-field hidden" id="fgSundayRate">
+              <label for="sundayHourlyRate">Sunday optional hourly rate (¬£)</label>
+              <input type="number" id="sundayHourlyRate" name="sundayHourlyRate" min="1" step="0.01" value="24">
             </div>
             <div class="rate-display" id="rateDisplay" aria-live="polite">Select role and scale to view hourly rate.</div>
             <div class="form-group" id="fgPlace" style="margin-bottom:1rem;">
@@ -647,7 +676,7 @@
             </div>
             <div class="form-group hr-notes">
               <label for="hrNotes">Internal HR notes</label>
-              <textarea id="hrNotes" name="hrNotes" rows="3" placeholder="Internal use only ù not included in contract"></textarea>
+              <textarea id="hrNotes" name="hrNotes" rows="3" placeholder="Internal use only ÔøΩ not included in contract"></textarea>
             </div>
           </div>
 
@@ -658,46 +687,29 @@
           </div>
 
           <div class="step-panel" data-step="4">
-            <h2>Step 4: Employee Signature</h2>
-
-            <div class="signature-section">
-              <h3>Employee signature</h3>
-              <div class="form-group">
-                <label for="typedName">Typed full name confirmation <span aria-hidden="true">*</span></label>
-                <input type="text" id="typedName" placeholder="Type full name as on contract">
-              </div>
-              <div class="form-group">
-                <label for="signatureCanvas">Employee signature <span aria-hidden="true">*</span></label>
-                <div class="signature-pad-wrap">
-                  <canvas id="signatureCanvas" width="500" height="150" aria-label="Employee signature pad"></canvas>
+            <h2>Step 4: Send to Employee</h2>
+            <p>The director signature is already on the contract. The employee will see it on their <strong>Portal dashboard</strong> (like an announcement), sign there, and the PDF will be saved under <strong>My Documents</strong>.</p>
+            <div class="rate-display" id="sendSummary" aria-live="polite"></div>
+            <div class="form-group" style="margin-top:1rem;">
+              <label class="ack-label" for="sendInviteEmail">
+                <input type="checkbox" id="sendInviteEmail" checked>
+                <span>Also send backup email with signing link (optional ÔøΩ Resend API)</span>
+              </label>
+            </div>
+            <div class="warning-box" id="sendWarning">Complete Steps 1ÔøΩ2 (including director signature) before sending.</div>
+            <div class="error-msg" id="sendError" style="display:none;margin-bottom:1rem;padding:0.75rem;background:#fef2f2;border-radius:var(--radius);"></div>
+            <button type="button" class="btn-gold" id="sendContractBtn" disabled>Send contract to employee</button>
+            <div class="success-box" id="sendSuccess" role="status">
+              <strong>Contract sent for employee signature.</strong>
+              <p id="sendEmailNote" style="margin:0.5rem 0 0;"></p>
+              <div class="send-link-box">
+                <label for="signingUrlInput">Employee signing link (valid 14 days)</label>
+                <input type="text" id="signingUrlInput" readonly>
+                <div class="send-actions">
+                  <button type="button" class="btn-secondary" id="copyUrlBtn">Copy link</button>
+                  <button type="button" class="btn-primary" id="newContractBtn">Start new contract</button>
                 </div>
-                <button type="button" class="btn-secondary" id="clearSignature">Clear Employee Signature</button>
               </div>
-              <div class="form-group">
-                <label for="employeeSignatureDate">Employee signature date</label>
-                <input type="text" id="employeeSignatureDate" readonly>
-              </div>
-              <div class="form-group">
-                <label class="ack-label" for="acknowledgement">
-                  <input type="checkbox" id="acknowledgement" required>
-                  <span>I confirm that I have read, understood and agree to the terms of this employment contract. <span aria-hidden="true">*</span></span>
-                </label>
-              </div>
-            </div>
-
-            <div class="warning-box" id="signatureWarning">
-              The contract cannot be generated until the employee has signed, typed their full name, and acknowledged the terms. The director must sign in Step 2.
-            </div>
-          </div>
-
-          <div class="step-panel" data-step="5">
-            <h2>Step 5: Generate PDF</h2>
-            <p>Generate the signed employment contract as a PDF document.</p>
-            <div class="warning-box" id="pdfWarning">Complete all required fields and employee acknowledgement before generating the PDF.</div>
-            <button type="button" class="btn-gold" id="generatePdf" disabled>Generate Signed Contract PDF</button>
-            <div class="success-box" id="successBox" role="status">
-              <strong>Contract generated and recorded locally.</strong>
-              <p id="downloadConfirm" style="margin:0.5rem 0 0;"></p>
             </div>
           </div>
 
@@ -735,606 +747,7 @@
     </section>
   </div>
 
-  <div id="pdfSource"></div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script>
-/* HR Contract Portal - clubSENsational
- * Future Supabase integration:
- * - Save signed PDF to employee profile
- * - Save audit trail
- * - Save IP address
- * - Save contract version
- * - Send email copy to employee
- * - Send email copy to HR
- * - Add director stored signature
- * - Add role based access control
- */
-(function () {
-  'use strict';
-  const CONTRACT_VERSION = '1.0';
-  const ADMIN_RATE = '13';
-  const GBP = '\u00A3';
-  const EM = '\u2014';
-  const STORAGE_KEY = 'clubSENsational_hr_contracts';
-  const RATE_TABLE = {
-    'Support Worker': { 'Scale 1': 18, 'Scale 2': 20, 'Scale 3': 23 },
-    'Climbing Instructor': { 'Scale 1': 22, 'Scale 2': 24, 'Scale 3': 30 },
-    'Fitness Instructor': { 'Scale 1': 24, 'Scale 2': 28, 'Scale 3': 32 },
-    'Swimming Instructor': { 'Scale 1': 22, 'Scale 2': 24, 'Scale 3': 28 }
-  };
-  const LOGO_PATH = 'assets/clubsensational-logo-hq.png?v=2';
-  const LOGO_DISPLAY = 'assets/clubsensational-logo.png?v=2';
-  let logoDataUrl = '';
-  const MASTER_TEMPLATE = [
-    'ZERO HOURS EMPLOYMENT CONTRACT', '',
-    'THIS EMPLOYMENT CONTRACT dated {{CONTRACT_DATE}}', '',
-    'BETWEEN:', '',
-    'EMPLOYEE DETAILS:',
-    'Full Name: {{EMPLOYEE_FULL_NAME}}',
-    'Address: {{EMPLOYEE_ADDRESS}}',
-    'Email: {{EMPLOYEE_EMAIL}}', '',
-    'EMPLOYER DETAILS:',
-    'clubSENsational LTD',
-    '56A Valetta Road, W3 7TN, London, United Kingdom',
-    'Registered Company No. 13755417', '',
-    'BACKGROUND:',
-    'The Employer is of the opinion that the Employee has the necessary qualifications, experience and abilities to assist and benefit the Employer in its business.',
-    'The Employer desires to employ the Employee and the Employee has agreed to accept and enter such employment upon the terms and conditions set out in this Agreement.',
-    'IN CONSIDERATION OF the matters described above and of the mutual benefits and obligations set forth in this Agreement, the parties agree as follows:', '',
-    'PARTICULARS OF EMPLOYMENT',
-    "As required by section 1 of the Employment Rights Act 1996, the particulars of the Employee's employment are detailed within this agreement.", '',
-    'COMMENCEMENT DATE AND TERM',
-    'The Employee will commence employment with the Employer on {{COMMENCEMENT_DATE}}.',
-    "The Employee's schedule of employment will be as follows:", '',
-    '{{CONTRACT_TYPE}}', '',
-    'JOB TITLE AND DESCRIPTION',
-    'The initial job title of the Employee will be:', '',
-    '{{JOB_TITLE}}',
-    'The Employee agrees to be employed on the terms and conditions set out in this Agreement.',
-    'The Employee agrees to be subject to the general supervision of and act pursuant to the orders, advice and direction of the Employer.',
-    'The Employee will perform any and all duties as requested by the Employer that are reasonable and customarily performed by a person holding a similar position in the industry or business of the Employer.',
-    "The Employee's job title or duties may be changed by agreement and with the approval of both the Employee and the Employer or after a notice period required under law.",
-    "The Employee agrees to abide by the Employer's rules, regulations, policies and practices, including those concerning work schedules, annual leave and sick leave, as they may from time to time be adopted or modified.",
-    "The Employee agrees to follow the Employer's Equipment and Uniform Policy and is responsible for the proper use, maintenance and care of any equipment, tools, uniforms and materials provided by the Employer for work purposes.",
-    'The Employee warrants that they are legally allowed to work in England.', '',
-    'EMPLOYEE REMUNERATION',
-    'Remuneration paid to the Employee for the services rendered by the Employee under this Agreement will consist of:', '',
-    GBP + '{{DELIVERY_RATE}}/h Delivery Service ({{ROLE_SCALE}} ' + EM + ' {{JOB_TITLE}})', '',
-    GBP + '{{ADMIN_RATE}}/h (Reviewed annually in line with Minimum Wage) ' + EM + ' Administrative Tasks, Inductions and Training.',
-    "If the Employer cancels a scheduled shift with at least 24 hours' notice, the Employee shall not be entitled to remuneration for that shift.",
-    'If the cancellation occurs less than 24 hours before the scheduled start time, the Employee shall be entitled to full remuneration for the shift as originally scheduled.',
-    'This remuneration will be payable once per month while this Agreement is in force.',
-    "The Employer is entitled to deduct from the Employee's remuneration, or from any other remuneration in whatever form, any applicable deductions and remittances as required by law.",
-    "The Employer will reimburse the Employee for all reasonable expenses, in accordance with the Employer's lawful policies as in effect from time to time.", '',
-    'PENSION',
-    'When required, the Employer will comply with its responsibility to operate a qualifying contributory pension scheme into which the Employee will be auto enrolled, subject to the conditions of the scheme.', '',
-    'PLACE OF WORK',
-    "The Employee's place of work will be:", '',
-    '{{PLACE_OF_WORK}}', '',
-    'TIME OF WORK',
-    "The Employee's normal hours of work, including breaks, are as follows:", '',
-    '{{NORMAL_HOURS_OF_WORK}}',
-    "However, the Employee will, on receiving reasonable notice from the Employer, work additional hours and/or hours outside of the Employee's normal hours of work as deemed necessary by the Employer to meet business needs, as permitted by law.", '',
-    'SICKNESS AND DISABILITY',
-    'If the Employee is unable to perform their duties as a result of illness or injury, the Employee will inform the Company Director by email no later than the night before, or not later than 7:00 am on the day of the absence.',
-    'If the Employee satisfies the qualifying conditions laid down by law, they will be entitled to receive statutory sick pay for any period of sickness or injury during agreed hours, but will not receive any other payments from the business during that time.', '',
-    'HOLIDAY ENTITLEMENT',
-    "The Employee's holiday entitlement will depend on the number of hours actually worked and will be pro rated based on a full time entitlement of 28 days' holiday during each full holiday year, including the usual eight public holidays in England and Wales.",
-    "The Business' holiday year runs between 1 January and 31 December.", '',
-    'DISCIPLINARY PROCEDURE',
-    "The Employer's disciplinary procedure, as amended from time to time, applies to the Employee.",
-    'The disciplinary procedure is set out in the Employee Manual and will be provided to the Employee or made available on request.', '',
-    'GRIEVANCE PROCEDURE',
-    "The Employer's grievance procedure, as amended from time to time, applies to the Employee.",
-    'The grievance procedure is set out in the Employee Manual and will be provided to the Employee or made available on request.', '',
-    'CONFIDENTIAL INFORMATION',
-    'The Employee acknowledges that, during employment, they may access confidential information belonging to the Employer.',
-    'The Employee agrees to keep all confidential information strictly confidential and not to disclose, use or share such information except as required for the proper performance of their duties or as authorised by the Employer.',
-    'This obligation will continue after the end of employment.', '',
-    'OWNERSHIP OF CONFIDENTIAL INFORMATION',
-    'All confidential information, documents, materials, systems, resources and work related information remain the property of the Employer.', '',
-    'RETURN OF CONFIDENTIAL INFORMATION',
-    'Upon request, or upon termination of employment, the Employee must return all confidential information, documents, equipment, materials and records belonging to the Employer.', '',
-    'CONTRACT BINDING AUTHORITY',
-    'The Employee does not have authority to enter into contracts or commitments on behalf of the Employer without prior written consent.', '',
-    'TERMINATION OF EMPLOYMENT',
-    "Where there is just cause for termination, the Employer may terminate the Employee's employment with two weeks' notice, as permitted by law.",
-    'If the Employee wishes to terminate their employment, they must provide two weeks\' notice.',
-    'Upon termination, the Employer will pay any outstanding remuneration and accrued holiday entitlement calculated up to the termination date.', '',
-    'GOVERNING LAW',
-    'This Agreement will be construed in accordance with and governed by the laws of England.', '',
-    'GENERAL PROVISIONS',
-    'This Agreement constitutes the entire agreement between the parties.',
-    'Any amendment or modification to this Agreement will only be binding if evidenced in writing and signed by both parties or their authorised representatives.',
-    'This Agreement supersedes any previous employment agreement between the Employer and the Employee.', '',
-    'SIGNATURES',
-    'By signing below, the Employee confirms that they have read, understood and agreed to the terms of this Employment Contract.', '',
-    'EMPLOYEE SIGNATURE',
-    'Name: {{EMPLOYEE_FULL_NAME}}',
-    'Date: {{EMPLOYEE_SIGNATURE_DATE}}',
-    'Signature: {{EMPLOYEE_SIGNATURE}}', '',
-    'DIRECTOR SIGNATURE',
-    'Name: {{DIRECTOR_NAME}}',
-    'Date: {{DIRECTOR_SIGNATURE_DATE}}',
-    'Signature: {{DIRECTOR_SIGNATURE}}', '',
-    'ACKNOWLEDGEMENT',
-    'I confirm that I have read, understood and agree to the terms of this employment contract.'
-  ].join('\n');
-
-  const PARTY_BLOCKS = ['EMPLOYEE DETAILS:', 'EMPLOYER DETAILS:'];
-  const SIGNATURE_BLOCKS = ['EMPLOYEE SIGNATURE', 'DIRECTOR SIGNATURE'];
-
-  let currentStep = 1, contractReference = '', signatureDataUrl = '', directorSignatureDataUrl = '';
-  let canvas, ctx, employeePadApi;
-  let directorCanvas, directorCtx, directorPadApi;
-  let employeePadReady = false, directorPadReady = false;
-  const venueHoursStore = {};
-  const $ = (id) => document.getElementById(id);
-
-  function formatUKDate(d) {
-    if (!d) return EM;
-    return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-  function formatDateTime() {
-    return new Date().toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }
-  function generateReference() {
-    const name = ($('employeeName').value || 'EMP').replace(/\s+/g, '').slice(0, 4).toUpperCase();
-    return 'CS-ZH-' + name + '-' + Date.now().toString(36).toUpperCase();
-  }
-  function getDeliveryRate() {
-    const role = $('role').value, scale = $('scale').value;
-    return (role && scale && RATE_TABLE[role]) ? RATE_TABLE[role][scale] : null;
-  }
-  function getSelectedVenues() {
-    const venues = [];
-    document.querySelectorAll('#placeCheckboxes input:checked').forEach((cb) => {
-      if (cb.value === 'Other') {
-        const o = $('otherLocation').value.trim();
-        venues.push({ key: 'other:' + (o || '__pending__'), name: o || 'Other (specify location above)' });
-      } else {
-        venues.push({ key: cb.value, name: cb.value });
-      }
-    });
-    return venues;
-  }
-  function getPlaces() {
-    return getSelectedVenues()
-      .filter((v) => !v.key.startsWith('other:') || v.key !== 'other:__pending__')
-      .map((v) => v.name);
-  }
-  function syncVenueHoursFromInputs() {
-    document.querySelectorAll('[data-venue-hours]').forEach((inp) => {
-      venueHoursStore[inp.dataset.venueKey] = inp.value;
-    });
-  }
-  function renderVenueHoursInputs() {
-    const container = $('venueHoursContainer');
-    syncVenueHoursFromInputs();
-    const venues = getSelectedVenues();
-    if (!venues.length) {
-      container.classList.add('hidden');
-      container.innerHTML = '';
-      return;
-    }
-    container.classList.remove('hidden');
-    let html = '<p class="venue-hours-intro">Normal hours of work at each selected venue</p>';
-    venues.forEach((v, i) => {
-      const val = venueHoursStore[v.key] || 'Variable hours';
-      venueHoursStore[v.key] = val;
-      const id = 'venue_hours_' + i;
-      const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-      html +=
-        '<div class="venue-hours-row">' +
-        '<label for="' + id + '">' + esc(v.name) + '</label>' +
-        '<input type="text" id="' + id + '" data-venue-key="' + esc(v.key) + '" data-venue-hours value="' + esc(val) + '" placeholder="e.g. Variable hours">' +
-        '</div>';
-    });
-    container.innerHTML = html;
-    container.querySelectorAll('[data-venue-hours]').forEach((inp) => {
-      inp.addEventListener('input', () => {
-        venueHoursStore[inp.dataset.venueKey] = inp.value;
-        updatePreview();
-      });
-    });
-  }
-  function getNormalHoursText() {
-    const venues = getSelectedVenues().filter((v) => v.key !== 'other:__pending__');
-    if (!venues.length) return EM;
-    syncVenueHoursFromInputs();
-    return venues.map((v) => {
-      const hours = (venueHoursStore[v.key] || 'Variable hours').trim() || 'Variable hours';
-      return v.name + ': ' + hours;
-    }).join('\n');
-  }
-  function getFormData() {
-    const rate = getDeliveryRate(), places = getPlaces();
-    const directorSig = directorSignatureDataUrl ? '[Signed electronically]' : $('directorName').value.trim();
-    const typed = $('typedName').value.trim(), ack = $('acknowledgement').checked;
-    const now = formatDateTime(), today = new Date().toISOString().slice(0, 10);
-    return {
-      CONTRACT_VERSION, CONTRACT_REFERENCE: contractReference || generateReference(),
-      GENERATED_DATE: formatDateTime(),
-      CONTRACT_DATE: formatUKDate($('contractDate').value),
-      EMPLOYEE_FULL_NAME: $('employeeName').value.trim(),
-      EMPLOYEE_ADDRESS: $('employeeAddress').value.trim(),
-      EMPLOYEE_EMAIL: $('employeeEmail').value.trim(),
-      COMMENCEMENT_DATE: formatUKDate($('commencementDate').value),
-      CONTRACT_TYPE: 'Zero Hours Contract ' + EM + ' hours worked will vary according to business requirements and mutual agreement.',
-      JOB_TITLE: $('role').value, ROLE_SCALE: $('scale').value,
-      DELIVERY_RATE: rate != null ? String(rate) : EM, ADMIN_RATE,
-      PLACE_OF_WORK: places.length ? places.map((p, i) => (i + 1) + '. ' + p).join('\n') : EM,
-      NORMAL_HOURS_OF_WORK: getNormalHoursText(),
-      DIRECTOR_NAME: $('directorName').value.trim(),
-      EMPLOYEE_SIGNATURE_DATE: $('employeeSignatureDate').value || formatUKDate(today),
-      EMPLOYEE_SIGNATURE: signatureDataUrl ? '[Signed electronically]' : (typed || EM),
-      DIRECTOR_SIGNATURE_DATE: $('directorSignatureDate').value || formatUKDate(today),
-      DIRECTOR_SIGNATURE: directorSig || EM,
-      EMPLOYEE_ACKNOWLEDGEMENT: ack ? 'Confirmed' : 'Pending',
-      SIGNED_TIMESTAMP: ack && signatureDataUrl && directorSignatureDataUrl ? now : EM
-    };
-  }
-  function fillTemplate(data) {
-    let text = MASTER_TEMPLATE;
-    Object.keys(data).forEach((k) => { text = text.split('{{' + k + '}}').join(data[k]); });
-    return text;
-  }
-  function renderContractHtml(text, forPdf) {
-    const logoSrc = logoDataUrl || LOGO_DISPLAY;
-    const imgStyle = forPdf
-      ? 'max-width:200px;height:auto;display:block;margin:0 auto 8px;'
-      : '';
-    const blocks = text.split('\n\n').filter((b) => b.trim());
-    let body = '';
-    let employeeBlockDone = false, directorBlockDone = false;
-    blocks.forEach((block) => {
-      if (block.startsWith('ZERO HOURS')) return;
-      if (block.startsWith('THIS EMPLOYMENT CONTRACT')) {
-        body += '<p class="contract-opening">' + block + '</p>';
-        return;
-      }
-      if (block === 'BETWEEN:') return;
-      const lines = block.split('\n');
-      const title = lines[0];
-      const rest = lines.slice(1).join('\n');
-      if (PARTY_BLOCKS.indexOf(title) >= 0) {
-        body += '<div class="contract-parties"><strong>' + title.replace(':', '') + '</strong><p style="margin:0;white-space:pre-wrap;">' + rest + '</p></div>';
-        return;
-      }
-      if (SIGNATURE_BLOCKS.indexOf(title) >= 0) {
-        let extra = '';
-        if (title === 'EMPLOYEE SIGNATURE' && !employeeBlockDone && signatureDataUrl) {
-          employeeBlockDone = true;
-          extra = '<img src="' + signatureDataUrl + '" alt="Employee signature" style="max-width:200px;height:65px;display:block;margin-top:8px;">';
-        }
-        if (title === 'DIRECTOR SIGNATURE' && !directorBlockDone && directorSignatureDataUrl) {
-          directorBlockDone = true;
-          extra = '<img src="' + directorSignatureDataUrl + '" alt="Director signature" style="max-width:200px;height:65px;display:block;margin-top:8px;">';
-        }
-        const restClean = rest.replace(/Signature: \[Signed electronically\]\s*/g, '').trim();
-        body += '<div class="contract-section contract-signature-block"><h3>' + title + '</h3><p style="margin:0;white-space:pre-wrap;">' + restClean + '</p>' + extra + '</div>';
-        return;
-      }
-      if (lines.length === 1) {
-        if (/^[A-Z0-9\s&'\-\(\)\.]+$/.test(title) && title.length < 80) {
-          body += '<div class="contract-section"><h3>' + title + '</h3></div>';
-        } else {
-          body += '<div class="contract-section"><p>' + block + '</p></div>';
-        }
-        return;
-      }
-      body += '<div class="contract-section"><h3>' + title + '</h3><p style="white-space:pre-wrap;">' + rest + '</p></div>';
-    });
-    return (
-      '<div class="contract-document">' +
-      '<header class="contract-letterhead">' +
-      '<img src="' + logoSrc + '" srcset="' + LOGO_DISPLAY + ' 1x, assets/clubsensational-logo@2x.png?v=2 2x" alt="clubSENsational" class="contract-logo" width="260" height="188"' + (imgStyle ? ' style="' + imgStyle + ';max-width:260px;height:auto;"' : '') + '>' +
-      '<div class="letterhead-legal">clubSENsational LTD</div>' +
-      '</header>' +
-      '<div class="contract-body">' +
-      '<h1 class="contract-doc-title">Zero Hours Employment Contract</h1>' +
-      body +
-      '</div>' +
-      '<footer class="contract-footer">56A Valetta Road, W3 7TN, London &middot; Registered Company No. 13755417</footer>' +
-      '</div>'
-    );
-  }
-  function updatePreview() {
-    if (!contractReference) contractReference = generateReference();
-    $('badgeReference').textContent = 'Contract Reference: ' + contractReference;
-    $('badgeVersion').textContent = 'Contract Version: ' + CONTRACT_VERSION;
-    const data = getFormData();
-    data.CONTRACT_REFERENCE = contractReference;
-    $('livePreview').innerHTML = renderContractHtml(fillTemplate(data), false);
-    const rate = getDeliveryRate();
-    if (rate != null) {
-      const msg = 'Delivery rate: ' + GBP + rate + '/h (' + $('scale').value + ' ' + EM + ' ' + $('role').value + '). Administrative tasks: ' + GBP + ADMIN_RATE + '/h (Reviewed annually in line with Minimum Wage).';
-      $('rateDisplay').textContent = msg;
-      $('reviewSummary').textContent = msg;
-    }
-    updatePdfButton();
-  }
-  function validateStep(step) {
-    let valid = true;
-    const show = (id, ok) => { const el = $(id); if (el) el.classList.toggle('invalid', !ok); if (!ok) valid = false; };
-    if (step === 1) {
-      show('fgName', $('employeeName').value.trim().length > 0);
-      show('fgAddress', $('employeeAddress').value.trim().length > 0);
-      const email = $('employeeEmail').value.trim();
-      show('fgEmail', email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
-    }
-    if (step === 2) {
-      show('fgContractDate', !!$('contractDate').value);
-      show('fgCommencement', !!$('commencementDate').value);
-      show('fgRole', !!$('role').value);
-      show('fgScale', !!$('scale').value);
-      const places = getPlaces();
-      $('fgPlace').classList.toggle('invalid', places.length === 0);
-      if (!places.length) valid = false;
-      show('fgDirector', $('directorName').value.trim().length > 0);
-      $('fgDirectorSignature').classList.toggle('invalid', !directorSignatureDataUrl);
-      if (!directorSignatureDataUrl) valid = false;
-    }
-    return valid;
-  }
-  function validateAllRequired() { for (let s = 1; s <= 2; s++) if (!validateStep(s)) return false; return true; }
-  function canGeneratePdf() {
-    if (!validateAllRequired()) return false;
-    const typed = $('typedName').value.trim(), name = $('employeeName').value.trim();
-    if (!typed || typed.toLowerCase() !== name.toLowerCase()) return false;
-    if (!signatureDataUrl || !directorSignatureDataUrl || !$('acknowledgement').checked) return false;
-    return true;
-  }
-  function updatePdfButton() {
-    const ok = canGeneratePdf();
-    $('generatePdf').disabled = !ok;
-    $('pdfWarning').style.display = ok ? 'none' : 'block';
-  }
-  function setStep(step) {
-    currentStep = step;
-    document.querySelectorAll('.step-panel').forEach((p) => p.classList.toggle('active', parseInt(p.dataset.step, 10) === step));
-    document.querySelectorAll('.progress-step').forEach((p) => {
-      const n = parseInt(p.dataset.step, 10);
-      p.classList.remove('active', 'done');
-      if (n === step) p.classList.add('active'); else if (n < step) p.classList.add('done');
-    });
-    $('btnPrev').disabled = step === 1;
-    $('btnNext').textContent = step === 5 ? 'Finish' : 'Next';
-    const todayStr = formatUKDate(new Date().toISOString().slice(0, 10));
-    if (step === 2) {
-      $('directorSignatureDate').value = todayStr;
-      ensureDirectorPad();
-    }
-    if (step === 4) {
-      $('employeeSignatureDate').value = todayStr;
-      ensureEmployeePad();
-    }
-    updatePdfButton();
-  }
-  function ensureEmployeePad() {
-    if (employeePadReady) {
-      employeePadApi.resize();
-      return;
-    }
-    canvas = $('signatureCanvas');
-    employeePadApi = setupSignaturePad(canvas, { drawing: false }, (url) => {
-      signatureDataUrl = url;
-      updatePreview();
-      updatePdfButton();
-    });
-    ctx = employeePadApi.context;
-    employeePadReady = true;
-  }
-  function ensureDirectorPad() {
-    if (directorPadReady) {
-      directorPadApi.resize();
-      return;
-    }
-    directorCanvas = $('directorSignatureCanvas');
-    directorPadApi = setupSignaturePad(directorCanvas, { drawing: false }, (url) => {
-      directorSignatureDataUrl = url;
-      $('fgDirectorSignature').classList.remove('invalid');
-      updatePreview();
-      updatePdfButton();
-    });
-    directorCtx = directorPadApi.context;
-    directorPadReady = true;
-  }
-  function setupSignaturePad(targetCanvas, padState, onComplete) {
-    const context = targetCanvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    const resize = () => {
-      const rect = targetCanvas.getBoundingClientRect();
-      targetCanvas.width = Math.max(rect.width, 300) * dpr;
-      targetCanvas.height = 150 * dpr;
-      context.setTransform(1, 0, 0, 1, 0, 0);
-      context.scale(dpr, dpr);
-      targetCanvas.style.height = '150px';
-      context.strokeStyle = '#0f2744';
-      context.lineWidth = 2;
-      context.lineCap = 'round';
-    };
-    resize();
-    const pos = (e) => {
-      const r = targetCanvas.getBoundingClientRect();
-      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-      return { x, y };
-    };
-    const start = (e) => { e.preventDefault(); padState.drawing = true; const p = pos(e); context.beginPath(); context.moveTo(p.x, p.y); };
-    const move = (e) => {
-      if (!padState.drawing) return;
-      e.preventDefault();
-      const p = pos(e);
-      context.lineTo(p.x, p.y);
-      context.stroke();
-    };
-    const end = () => {
-      if (!padState.drawing) return;
-      padState.drawing = false;
-      onComplete(targetCanvas.toDataURL('image/png'));
-    };
-    targetCanvas.addEventListener('mousedown', start);
-    targetCanvas.addEventListener('mousemove', move);
-    targetCanvas.addEventListener('mouseup', end);
-    targetCanvas.addEventListener('mouseleave', end);
-    targetCanvas.addEventListener('touchstart', start, { passive: false });
-    targetCanvas.addEventListener('touchmove', move, { passive: false });
-    targetCanvas.addEventListener('touchend', end);
-    return { context, resize, clear: () => { resize(); } };
-  }
-  function initCanvas() {
-    /* Pads initialise when their step is shown (hidden steps have zero canvas width). */
-  }
-  function clearSignature() {
-    employeePadApi.clear();
-    signatureDataUrl = '';
-    updatePreview();
-    updatePdfButton();
-  }
-  function clearDirectorSignature() {
-    directorPadApi.clear();
-    directorSignatureDataUrl = '';
-    updatePreview();
-    updatePdfButton();
-  }
-  function saveToLocalStorage(meta) {
-    const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    list.unshift(meta);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
-    renderRecent();
-  }
-  function renderRecent() {
-    const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const tbody = $('recentBody'), noRecent = $('noRecent');
-    tbody.innerHTML = '';
-    if (!list.length) { noRecent.style.display = 'block'; return; }
-    noRecent.style.display = 'none';
-    list.forEach((row) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + row.contractReference + '</td><td>' + row.employeeName + '</td><td>' + row.role + '</td><td>' + row.scale + '</td><td>' + row.generatedTimestamp + '</td><td>' + row.signedStatus + '</td>';
-      tbody.appendChild(tr);
-    });
-  }
-  function buildPdfHtml(data) {
-    const pdfStyles = '<style>' +
-      '.contract-document{font-family:Georgia,serif;color:#111;}' +
-      '.contract-letterhead{background:#fff;padding:18px 22px 12px;text-align:center;border-bottom:3px solid #c9a227;}' +
-      '.contract-logo{width:260px;max-width:260px;height:auto;display:block;margin:0 auto;}' +
-      '.letterhead-legal{margin-top:8px;font-family:Arial,sans-serif;font-size:8pt;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:#0f2744;}' +
-      '.contract-body{padding:18px 22px;}' +
-      '.contract-doc-title{text-align:center;font-size:12pt;font-weight:700;color:#0f2744;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid #c9a227;}' +
-      '.contract-opening{text-align:center;font-weight:600;color:#0f2744;margin:0 0 14px;font-size:10pt;}' +
-      '.contract-section h3{font-family:Arial,sans-serif;font-size:8.5pt;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#0f2744;margin:14px 0 6px;padding-bottom:3px;border-bottom:1px solid #c9a227;}' +
-      '.contract-section p{margin:0 0 8px;font-size:9.5pt;line-height:1.45;text-align:justify;}' +
-      '.contract-parties{background:#e8f0f6;border:1px solid #b8cfd9;border-left:3px solid #0f2744;padding:10px 12px;margin:8px 0 12px;font-size:9pt;}' +
-      '.contract-parties strong{display:block;font-family:Arial,sans-serif;font-size:8pt;text-transform:uppercase;color:#0f2744;margin-bottom:4px;}' +
-      '.contract-signature-block{border-top:1px dashed #ccc;padding-top:8px;}' +
-      '.contract-footer{font-family:Arial,sans-serif;font-size:7.5pt;color:#64748b;text-align:center;padding:10px 16px;border-top:1px solid #e2e8f0;background:#f7f9fb;}' +
-      '</style>';
-    return pdfStyles + renderContractHtml(fillTemplate(data), true);
-  }
-  function loadLogo() {
-    return fetch(LOGO_PATH)
-      .then((r) => { if (!r.ok) throw new Error('logo'); return r.blob(); })
-      .then((blob) => new Promise((resolve) => {
-        const fr = new FileReader();
-        fr.onload = () => resolve(fr.result);
-        fr.onerror = () => resolve('');
-        fr.readAsDataURL(blob);
-      }))
-      .catch(() => fetch(LOGO_DISPLAY).then((r) => r.blob()).then((blob) => new Promise((resolve) => {
-        const fr = new FileReader();
-        fr.onload = () => resolve(fr.result);
-        fr.onerror = () => resolve('');
-        fr.readAsDataURL(blob);
-      })).catch(() => ''));
-  }
-  function pdfFilename() {
-    const name = $('employeeName').value.trim().replace(/\s+/g, '_');
-    const role = $('role').value.replace(/\s+/g, '_');
-    const scale = $('scale').value.replace(/\s+/g, '_');
-    const date = $('contractDate').value || new Date().toISOString().slice(0, 10);
-    return 'ClubSENsational_Employment_Contract_' + name + '_' + role + '_' + scale + '_' + date + '.pdf';
-  }
-  async function generatePdf() {
-    if (!canGeneratePdf()) return;
-    const data = getFormData();
-    data.CONTRACT_REFERENCE = contractReference;
-    data.EMPLOYEE_SIGNATURE = '[Signed electronically]';
-    data.DIRECTOR_SIGNATURE = '[Signed electronically]';
-    data.EMPLOYEE_ACKNOWLEDGEMENT = 'Confirmed';
-    data.SIGNED_TIMESTAMP = formatDateTime();
-    const pdfEl = $('pdfSource');
-    pdfEl.innerHTML = buildPdfHtml(data);
-    pdfEl.classList.remove('hidden');
-    pdfEl.style.cssText = 'position:fixed;left:0;top:0;width:210mm;z-index:9999;background:#fff;';
-    try {
-      await html2pdf().set({ margin: 12, filename: pdfFilename(), image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(pdfEl).save();
-      saveToLocalStorage({ contractReference, employeeName: data.EMPLOYEE_FULL_NAME, employeeEmail: data.EMPLOYEE_EMAIL, role: data.JOB_TITLE, scale: data.ROLE_SCALE, deliveryRate: data.DELIVERY_RATE, contractType: 'Zero Hours', contractDate: $('contractDate').value, commencementDate: $('commencementDate').value, generatedTimestamp: data.SIGNED_TIMESTAMP, signedStatus: 'Signed' });
-      $('successBox').classList.add('visible');
-      $('downloadConfirm').textContent = 'Downloaded: ' + pdfFilename();
-    } catch (err) { alert('PDF generation failed. Please try again.'); console.error(err); }
-    pdfEl.classList.add('hidden');
-    pdfEl.style.cssText = '';
-  }
-  function bindEvents() {
-    $('role').addEventListener('change', () => { $('scale').disabled = !$('role').value; $('scale').value = ''; updatePreview(); });
-    $('scale').addEventListener('change', updatePreview);
-    ['employeeName', 'employeeAddress', 'employeeEmail', 'contractDate', 'commencementDate', 'directorName', 'typedName'].forEach((id) => {
-      $(id).addEventListener('input', () => { if (id === 'employeeName') contractReference = ''; updatePreview(); });
-    });
-    document.querySelectorAll('#placeCheckboxes input').forEach((cb) => {
-      cb.addEventListener('change', () => {
-        $('otherLocationWrap').classList.toggle('hidden', !$('placeOther').checked);
-        renderVenueHoursInputs();
-        updatePreview();
-      });
-    });
-    $('otherLocation').addEventListener('input', () => {
-      if ($('placeOther').checked) renderVenueHoursInputs();
-      updatePreview();
-    });
-    $('acknowledgement').addEventListener('change', updatePdfButton);
-    $('typedName').addEventListener('input', updatePdfButton);
-    $('clearSignature').addEventListener('click', clearSignature);
-    $('clearDirectorSignature').addEventListener('click', clearDirectorSignature);
-    $('btnNext').addEventListener('click', () => { if (currentStep < 5) { if (currentStep <= 2 && !validateStep(currentStep)) return; setStep(currentStep + 1); } });
-    $('btnPrev').addEventListener('click', () => { if (currentStep > 1) setStep(currentStep - 1); });
-    $('generatePdf').addEventListener('click', generatePdf);
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        if (employeePadReady) employeePadApi.resize();
-        if (directorPadReady) directorPadApi.resize();
-      }, 150);
-    });
-    window.addEventListener('orientationchange', () => {
-      setTimeout(() => {
-        if (employeePadReady) employeePadApi.resize();
-        if (directorPadReady) directorPadApi.resize();
-      }, 300);
-    });
-  }
-  function init() {
-    contractReference = generateReference();
-    $('employeeSignatureDate').value = formatUKDate(new Date().toISOString().slice(0, 10));
-    $('directorSignatureDate').value = formatUKDate(new Date().toISOString().slice(0, 10));
-    initCanvas();
-    bindEvents();
-    renderRecent();
-    setStep(1);
-    loadLogo().then((url) => {
-      if (url) logoDataUrl = url;
-      updatePreview();
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
-})();
-
-  </script>
+  <script src="js/contract-core.js"></script>
+  <script src="js/hr-app.js"></script>
 </body>
 </html>
