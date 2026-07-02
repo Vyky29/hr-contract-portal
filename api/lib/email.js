@@ -4,8 +4,10 @@ const FROM = process.env.RESEND_FROM_EMAIL || 'HR Contract Portal <contracts@clu
 const HR_EMAIL = process.env.HR_EMAIL || 'hr@clubsensational.co.uk';
 
 export async function sendInviteEmail({ employeeEmail, employeeName, signingUrl, contractReference, role, contractKind }) {
-  const isZeroHours = contractKind !== 'fixed_term';
-  const contractLabel = isZeroHours ? 'Zero Hours Employment Contract' : 'Fixed Term Employment Contract';
+  const isZeroHours = contractKind !== 'fixed_term' && contractKind !== 'permanent_part_time';
+  const contractLabel = contractKind === 'permanent_part_time'
+    ? 'Permanent Part-Time (Term-Time Only) Employment Contract'
+    : (contractKind === 'fixed_term' ? 'Fixed Term Employment Contract' : 'Zero Hours Employment Contract');
   const annexNote = isZeroHours
     ? '<p style="font-size:13px;color:#64748b;">The contract document includes <strong>Annex A</strong>: workplace pension (auto-enrolment) information required by UK law.</p>'
     : '';
