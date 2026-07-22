@@ -21,8 +21,16 @@
   let portalLinkVerified = false;
   let selectedPortalLogin = "";
 
-  function isTermTimeKind() {
-    return contractKind === "fixed_term" || contractKind === "permanent_part_time";
+  function isSalariedKind() {
+    return C.isSalariedKind ? C.isSalariedKind(contractKind) : (contractKind !== "zero_hours");
+  }
+
+  function isZeroHoursKind() {
+    return C.isZeroHoursKind ? C.isZeroHoursKind(contractKind) : contractKind === "zero_hours";
+  }
+
+  function isDayCentreKind() {
+    return contractKind === "day_centre_part_time";
   }
 
   function isFixedTermOnly() {
@@ -30,41 +38,71 @@
   }
 
   function contractKindLabel() {
-    if (contractKind === "fixed_term") return "Fixed-Term Part-Time";
-    if (contractKind === "permanent_part_time") return "Permanent Part-Time (Term-Time Only)";
-    return "Zero hours";
+    return C.contractKindLabel ? C.contractKindLabel(contractKind) : contractKind;
+  }
+
+  function contractRefDateIso() {
+    const el = $("contractDate");
+    return el && el.value ? String(el.value).trim().slice(0, 10) : "";
+  }
+
+  function refreshContractReference() {
+    const nameEl = $("employeeName");
+    contractReference = C.generateReference(
+      nameEl ? nameEl.value : "",
+      contractKind,
+      contractRefDateIso()
+    );
   }
 
   function syncContractTypeFields() {
-    const termTime = isTermTimeKind();
+    const salaried = isSalariedKind();
+    const zeroHours = isZeroHoursKind();
+    const dayCentre = isDayCentreKind();
     const fixed = isFixedTermOnly();
-    document.querySelectorAll(".zero-hours-field").forEach((el) => el.classList.toggle("hidden", termTime));
-    document.querySelectorAll(".fixed-term-field").forEach((el) => el.classList.toggle("hidden", !termTime));
+
+    document.querySelectorAll(".zero-hours-field").forEach((el) => el.classList.toggle("hidden", !zeroHours));
+    document.querySelectorAll(".salaried-field").forEach((el) => el.classList.toggle("hidden", !salaried));
+    document.querySelectorAll(".fixed-term-field").forEach((el) => el.classList.toggle("hidden", !salaried));
     document.querySelectorAll(".fixed-term-only-field").forEach((el) => el.classList.toggle("hidden", !fixed));
+    document.querySelectorAll(".day-centre-field").forEach((el) => el.classList.toggle("hidden", !dayCentre));
+
     if ($("roleScalesContainer")) {
       syncScaleFromRoles();
     }
     ["annualSalary", "weeklyHours"].forEach((id) => {
       const el = $(id);
-      if (el) el.required = termTime;
+      if (el) el.required = salaried;
     });
     const termEndEl = $("termEndDate");
     if (termEndEl) termEndEl.required = fixed;
+
+    if (contractKind === "full_time") {
+      const wh = $("weeklyHours");
+      if (wh && !wh.value) wh.value = "40";
+    }
+    if (dayCentre) {
+      syncDayCentreHoursFromDays();
+    }
+
+    const hint = $("concurrentHint");
+    if (hint) hint.style.display = dayCentre ? "block" : "none";
   }
 
   function selectContractType(kind) {
-    contractKind =
-      kind === "fixed_term" || kind === "permanent_part_time" ? kind : "zero_hours";
+    const normalized = C.normalizeContractKind ? C.normalizeContractKind(kind) : kind;
+    const allowed = ["zero_hours", "day_centre_part_time", "full_time", "fixed_term"];
+    contractKind = allowed.indexOf(normalized) >= 0 ? normalized : "zero_hours";
     document.querySelectorAll("[data-contract-kind]").forEach((card) => {
       const active = card.dataset.contractKind === contractKind;
       card.classList.toggle("active", active);
       card.setAttribute("aria-pressed", active ? "true" : "false");
     });
-    if (isTermTimeKind()) {
+    if (isSalariedKind()) {
       Object.keys(roleScaleStore).forEach((k) => delete roleScaleStore[k]);
     }
     syncContractTypeFields();
-    contractReference = C.generateReference($("employeeName").value, contractKind);
+    refreshContractReference();
     updatePreview();
   }
 
@@ -176,7 +214,7 @@
       }
     }
     if ($("employeeName")) {
-      contractReference = C.generateReference($("employeeName").value, contractKind);
+      refreshContractReference();
     }
     updatePreview();
   }
@@ -231,7 +269,7 @@
     if (!container) return;
     syncRoleScaleStoreFromInputs();
     const roles = getSelectedRoles();
-    if (isTermTimeKind() || !roles.length) {
+    if (!isZeroHoursKind() || !roles.length) {
       container.innerHTML = "";
       container.closest(".form-group")?.classList.add("hidden");
       return;
@@ -347,7 +385,27 @@
     });
   }
 
+  function getSelectedWorkDays() {
+    const days = [];
+    document.querySelectorAll('#workDayCheckboxes input:checked, input[name="workDay"]:checked').forEach((cb) => days.push(cb.value));
+    return days;
+  }
+
+  function syncDayCentreHoursFromDays() {
+    if (!isDayCentreKind()) return;
+    const days = getSelectedWorkDays();
+    const wh = $("weeklyHours");
+    if (wh && days.length) wh.value = String(days.length * 5);
+  }
+
   function getNormalHoursText() {
+    if (isDayCentreKind()) {
+      const days = getSelectedWorkDays();
+      if (days.length) {
+        return days.join(", ") + ": 11:00–16:00 (5 paid hours per day)";
+      }
+      return C.EM;
+    }
     const venues = getSelectedVenues().filter((v) => v.key !== "other:__pending__");
     if (!venues.length) return C.EM;
     syncVenueHoursFromInputs();
@@ -369,8 +427,12 @@
       weeklyHours: $("weeklyHours") ? $("weeklyHours").value : "",
       roles: getSelectedRoles(),
       role: formatRoleLabel(getSelectedRoles()),
-      roleScales: getRoleScales(),
-      scale: isTermTimeKind() ? "" : formatRoleScaleLabel(),
+      roleScales: isZeroHoursKind() ? getRoleScales() : {},
+      scale: isZeroHoursKind() ? formatRoleScaleLabel() : "",
+      workDays: getSelectedWorkDays(),
+      concurrentWithOther: !!($("concurrentWithOther") && $("concurrentWithOther").checked),
+      otherContractRef: $("otherContractRef") ? $("otherContractRef").value.trim() : "",
+      jobTitleOverride: $("jobTitleOverride") ? $("jobTitleOverride").value.trim() : "",
       portalStaffLogin: getPortalStaffLogin(),
       portalAuthEmail: getPortalAuthEmail(),
       places: getPlaces(),
@@ -382,9 +444,10 @@
 
   function buildTemplateDataForPreview() {
     const places = getPlaces();
+    if (!contractReference) refreshContractReference();
     return C.buildTemplateData({
       contractKind,
-      contractReference: contractReference || C.generateReference($("employeeName").value, contractKind),
+      contractReference: contractReference,
       employeeName: $("employeeName").value.trim(),
       employeeAddress: $("employeeAddress").value.trim(),
       employeeEmail: $("employeeEmail").value.trim(),
@@ -395,8 +458,12 @@
       weeklyHours: $("weeklyHours") ? $("weeklyHours").value : "",
       roles: getSelectedRoles(),
       role: formatRoleLabel(getSelectedRoles()),
-      roleScales: getRoleScales(),
-      scale: isTermTimeKind() ? "" : formatRoleScaleLabel(),
+      roleScales: isZeroHoursKind() ? getRoleScales() : {},
+      scale: isZeroHoursKind() ? formatRoleScaleLabel() : "",
+      workDays: getSelectedWorkDays(),
+      concurrentWithOther: !!($("concurrentWithOther") && $("concurrentWithOther").checked),
+      otherContractRef: $("otherContractRef") ? $("otherContractRef").value.trim() : "",
+      jobTitleOverride: $("jobTitleOverride") ? $("jobTitleOverride").value.trim() : "",
       portalStaffLogin: getPortalStaffLogin(),
       portalAuthEmail: getPortalAuthEmail(),
       placeOfWork: places.length ? places.map((p, i) => i + 1 + ". " + p).join("\n") : C.EM,
@@ -408,24 +475,19 @@
   }
 
   function updatePreview() {
-    if (!contractReference) contractReference = C.generateReference($("employeeName").value, contractKind);
-    $("badgeReference").textContent = "Contract Reference: " + contractReference;
-    $("badgeVersion").textContent = "Contract Version: " + C.CONTRACT_VERSION;
+    if (!contractReference) refreshContractReference();
+    const badgeRef = $("badgeReference");
+    if (badgeRef) badgeRef.textContent = "Reference: " + contractReference;
+    const badgeVer = $("badgeVersion");
+    if (badgeVer) badgeVer.textContent = "Contract Version: " + C.CONTRACT_VERSION;
     const data = buildTemplateDataForPreview();
     data.CONTRACT_REFERENCE = contractReference;
     const kind = data.CONTRACT_KIND || contractKind;
     $("livePreview").innerHTML = C.renderContractHtml(C.fillTemplate(data, kind), false, {
       directorSignatureDataUrl: directorSignatureDataUrl
     }, kind);
-    if (isTermTimeKind()) {
-      const salary = $("annualSalary") ? $("annualSalary").value : "";
-      const hours = $("weeklyHours") ? $("weeklyHours").value : "";
-      const msg = salary
-        ? "Annual salary: " + C.formatSalary(salary) + " (inclusive of holiday pay). Contracted: " + (hours || C.EM) + " hours/week."
-        : "Enter annual salary and weekly hours.";
-      $("rateDisplay").textContent = msg;
-      $("reviewSummary").textContent = msg;
-    } else {
+
+    if (isZeroHoursKind()) {
       const rateMsg = buildRateSummary();
       if (rateMsg) {
         $("rateDisplay").textContent = rateMsg;
@@ -434,7 +496,27 @@
         $("rateDisplay").textContent = "Select at least one role and a scale for each role.";
         $("reviewSummary").textContent = "";
       }
+    } else if (isDayCentreKind()) {
+      const salary = $("annualSalary") ? $("annualSalary").value : "";
+      const hours = $("weeklyHours") ? $("weeklyHours").value : "";
+      const days = getSelectedWorkDays();
+      let msg = salary
+        ? "Annual salary: " + C.formatSalary(salary) + ". Contracted: " + (hours || C.EM) + " hours/week."
+        : "Enter annual salary and select work days.";
+      if (days.length) msg += " (" + days.length + " days × 5h)";
+      msg += "\nTip: if they also work evening Activity Services, create a separate Zero Hours contract afterwards.";
+      $("rateDisplay").textContent = msg;
+      $("reviewSummary").textContent = msg;
+    } else {
+      const salary = $("annualSalary") ? $("annualSalary").value : "";
+      const hours = $("weeklyHours") ? $("weeklyHours").value : "";
+      const msg = salary
+        ? "Annual salary: " + C.formatSalary(salary) + ". Contracted: " + (hours || C.EM) + " hours/week."
+        : "Enter annual salary and weekly hours.";
+      $("rateDisplay").textContent = msg;
+      $("reviewSummary").textContent = msg;
     }
+
     const canSend = canSendContract();
     $("sendContractBtn").disabled = !canSend;
     const warn = $("sendWarning");
@@ -466,16 +548,23 @@
       const roles = getSelectedRoles();
       $("fgRole").classList.toggle("invalid", !roles.length);
       if (!roles.length) valid = false;
-      if (isTermTimeKind()) {
+
+      if (isZeroHoursKind()) {
+        $("fgScale").classList.toggle("invalid", !allRoleScalesSelected());
+        if (!allRoleScalesSelected()) valid = false;
+      } else if (isSalariedKind()) {
+        show("fgAnnualSalary", $("annualSalary") && !!$("annualSalary").value && Number($("annualSalary").value) > 0);
+        show("fgWeeklyHours", $("weeklyHours") && !!$("weeklyHours").value && Number($("weeklyHours").value) > 0);
         if (isFixedTermOnly()) {
           show("fgTermEnd", $("termEndDate") && !!$("termEndDate").value);
         }
-        show("fgAnnualSalary", $("annualSalary") && !!$("annualSalary").value && Number($("annualSalary").value) > 0);
-        show("fgWeeklyHours", $("weeklyHours") && !!$("weeklyHours").value && Number($("weeklyHours").value) > 0);
-      } else {
-        $("fgScale").classList.toggle("invalid", !allRoleScalesSelected());
-        if (!allRoleScalesSelected()) valid = false;
+        if (isDayCentreKind()) {
+          const days = getSelectedWorkDays();
+          $("fgWorkDays").classList.toggle("invalid", days.length === 0);
+          if (!days.length) valid = false;
+        }
       }
+
       const places = getPlaces();
       $("fgPlace").classList.toggle("invalid", places.length === 0);
       if (!places.length) valid = false;
@@ -519,7 +608,7 @@
         contractKindLabel() +
         " — " +
         formatRoleLabel(getSelectedRoles()) +
-        (isTermTimeKind() ? "" : " — " + formatRoleScaleLabel());
+        (isZeroHoursKind() ? " — " + formatRoleScaleLabel() : "");
       $("sendContractBtn").disabled = !canSendContract();
     }
   }
@@ -562,7 +651,7 @@
     templateData.CONTRACT_REFERENCE = contractReference;
 
     try {
-      const mod = await import("./hr-contract-publish.js?v=20260622-staff");
+      const mod = await import("./hr-contract-publish.js?v=20260625-recent-actions");
       const result = await mod.portalPublishEmploymentContract(auth.supabase, auth.user.id, {
         contractReference,
         templateData,
@@ -626,11 +715,104 @@
     return map[status] || status;
   }
 
+  function escHtml(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function contractDocumentPath(row) {
+    const doc =
+      row.documents && !Array.isArray(row.documents)
+        ? row.documents
+        : Array.isArray(row.documents)
+          ? row.documents[0]
+          : null;
+    return doc && doc.file_url ? String(doc.file_url) : "";
+  }
+
+  function recentActionsHtml(row) {
+    const filePath = contractDocumentPath(row);
+    let html = '<div class="recent-actions">';
+    if (row.status === "completed" && filePath) {
+      html +=
+        '<button type="button" class="btn-recent btn-dl" data-recent-action="download" data-contract-id="' +
+        escHtml(row.id) +
+        '" data-file-path="' +
+        escHtml(filePath) +
+        '" data-contract-ref="' +
+        escHtml(row.contract_reference) +
+        '">Download PDF</button>';
+    }
+    if (row.status === "awaiting_employee") {
+      html +=
+        '<a class="recent-link" href="contract_sign.html?contract_id=' +
+        encodeURIComponent(row.id) +
+        '">Staff view</a>';
+    }
+    html +=
+      '<button type="button" class="btn-recent btn-del" data-recent-action="delete" data-contract-id="' +
+      escHtml(row.id) +
+      '" data-contract-ref="' +
+      escHtml(row.contract_reference) +
+      '">Delete</button>';
+    html += "</div>";
+    return html;
+  }
+
+  function bindRecentContractActions() {
+    const tbody = $("recentBody");
+    if (!tbody || tbody.dataset.boundRecentActions) return;
+    tbody.dataset.boundRecentActions = "1";
+    tbody.addEventListener("click", async (ev) => {
+      const btn = ev.target.closest("[data-recent-action]");
+      if (!btn) return;
+      const action = btn.getAttribute("data-recent-action");
+      const id = btn.getAttribute("data-contract-id");
+      const filePath = btn.getAttribute("data-file-path") || "";
+      const ref = btn.getAttribute("data-contract-ref") || "this contract";
+      const auth = portalClient();
+      if (!auth) return;
+      const mod = await import("./hr-contract-publish.js?v=20260625-recent-actions");
+      if (action === "download") {
+        btn.disabled = true;
+        try {
+          await mod.portalDownloadEmploymentContractPdf(auth.supabase, filePath, ref);
+        } catch (e) {
+          alert((e && e.message) || "Download failed.");
+        } finally {
+          btn.disabled = false;
+        }
+        return;
+      }
+      if (action === "delete") {
+        if (
+          !confirm(
+            "Delete " +
+              ref +
+              "? This removes the contract, dashboard notice and signed PDF. This cannot be undone."
+          )
+        ) {
+          return;
+        }
+        btn.disabled = true;
+        try {
+          await mod.portalAdminDeleteEmploymentContract(auth.supabase, id);
+          loadRecentFromSupabase();
+        } catch (e) {
+          alert((e && e.message) || "Could not delete contract.");
+          btn.disabled = false;
+        }
+      }
+    });
+  }
+
   async function loadRecentFromSupabase() {
     const auth = portalClient();
     if (!auth) return;
     try {
-      const mod = await import("./hr-contract-publish.js?v=20260622-staff");
+      const mod = await import("./hr-contract-publish.js?v=20260625-recent-actions");
       const rows = await mod.portalListEmploymentContracts(auth.supabase);
       const tbody = $("recentBody");
       const noRecent = $("noRecent");
@@ -644,24 +826,21 @@
         const tr = document.createElement("tr");
         const date = row.completed_at || row.sent_at || row.created_at;
         const dateStr = date ? new Date(date).toLocaleString("en-GB") : "?";
-        const link =
-          row.status === "awaiting_employee"
-            ? ' <a href="contract_sign.html?contract_id=' + row.id + '">Staff view</a>'
-            : "";
         tr.innerHTML =
           "<td>" +
-          row.contract_reference +
+          escHtml(row.contract_reference) +
           "</td><td>" +
-          row.employee_name +
+          escHtml(row.employee_name) +
           "</td><td>" +
-          row.role +
+          escHtml(row.role) +
           "</td><td>" +
-          row.scale +
+          escHtml(row.scale) +
           "</td><td>" +
           dateStr +
           "</td><td>" +
           statusLabel(row.status) +
-          link +
+          "</td><td>" +
+          recentActionsHtml(row) +
           "</td>";
         tbody.appendChild(tr);
       });
@@ -684,12 +863,31 @@
         updatePreview();
       });
     });
+    document.querySelectorAll('#workDayCheckboxes input, input[name="workDay"]').forEach((cb) => {
+      cb.addEventListener("change", () => {
+        syncDayCentreHoursFromDays();
+        updatePreview();
+      });
+    });
+    if ($("concurrentWithOther")) {
+      $("concurrentWithOther").addEventListener("change", () => {
+        const wrap = $("otherContractRefWrap");
+        if (wrap) wrap.classList.toggle("hidden", !$("concurrentWithOther").checked);
+        updatePreview();
+      });
+    }
+    if ($("otherContractRef")) {
+      $("otherContractRef").addEventListener("input", updatePreview);
+    }
+    if ($("jobTitleOverride")) {
+      $("jobTitleOverride").addEventListener("input", updatePreview);
+    }
     ["employeeName", "employeeAddress", "employeeEmail", "contractDate", "commencementDate", "directorName", "termEndDate", "annualSalary", "weeklyHours"].forEach(
       (id) => {
         const el = $(id);
         if (!el) return;
         el.addEventListener("input", () => {
-          if (id === "employeeName") contractReference = C.generateReference($("employeeName").value, contractKind);
+          if (id === "employeeName" || id === "contractDate") refreshContractReference();
           updatePreview();
         });
       }
@@ -745,6 +943,7 @@
     }
     const form = $("contractForm");
     if (form) form.reset();
+    if ($("otherContractRefWrap")) $("otherContractRefWrap").classList.add("hidden");
     selectContractType("zero_hours");
     loadStaffRosterDropdown();
     const sendOk = $("sendSuccess");
@@ -753,8 +952,7 @@
     if (sendErr) sendErr.style.display = "none";
     const sendBtn = $("sendContractBtn");
     if (sendBtn) sendBtn.disabled = true;
-    contractReference = C.generateReference("", contractKind);
-    $("badgeReference").textContent = "Contract Reference: " + contractReference;
+    refreshContractReference();
     $("directorSignatureDate").value = C.formatUKDate(new Date().toISOString().slice(0, 10));
     setStep(1);
     updatePreview();
@@ -763,10 +961,10 @@
 
   function init() {
     if (!$("contractForm")) return;
-    contractReference = C.generateReference("", contractKind);
-    $("badgeReference").textContent = "Contract Reference: " + contractReference;
+    refreshContractReference();
     $("directorSignatureDate").value = C.formatUKDate(new Date().toISOString().slice(0, 10));
     bindEvents();
+    bindRecentContractActions();
     syncContractTypeFields();
     setStep(1);
     loadStaffRosterDropdown();

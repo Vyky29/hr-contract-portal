@@ -34,7 +34,7 @@ export async function publishContractToStaffDashboard(supabase, opts) {
   });
 
   const row = {
-    title: `Sign employment contract${role ? " � " + role : ""}`,
+    title: 'Sign employment contract' + (role ? ' \u2014 ' + role : ''),
     body,
     message_type: "contract_signing",
     priority: "high",
